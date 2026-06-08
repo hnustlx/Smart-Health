@@ -27,6 +27,6 @@ public class ChatController {
     @PreAuthorize("hasRole('VIP')")
     public Result<ChatResponse> askQuestion(@AuthenticationPrincipal UserPrincipal principal,
                                              @Valid @RequestBody ChatRequest request) {
-        return Result.success(chatService.askQuestion(principal.getRole(), request));
+        return Result.success(chatService.askQuestion(principal.getUserId(), principal.getRole(), request));
     }
 }

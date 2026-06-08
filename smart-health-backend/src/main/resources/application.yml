@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/smart_health?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
     username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:88888888}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -28,13 +28,20 @@ mybatis:
     map-underscore-to-camel-case: true
 
 jwt:
-  secret: ${JWT_SECRET:SmartHealth2026SecretKeyForJWTTokenGenerationMustBe256BitsLong!!}
+  secret: ${JWT_SECRET}
   expiration: 86400000
+
+ai:
+  provider: deepseek  # 可选 deepseek / ollama
 
 deepseek:
   api-key: ${DEEPSEEK_API_KEY:}
   model: deepseek-chat
   url: https://api.deepseek.com/v1/chat/completions
+
+ollama:
+  url: http://localhost:11434
+  model: qwen3.5:9b
 
 chroma:
   url: ${CHROMA_URL:http://localhost:8000}

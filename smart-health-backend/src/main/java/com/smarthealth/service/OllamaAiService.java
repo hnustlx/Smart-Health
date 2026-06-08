@@ -3,8 +3,10 @@ package com.smarthealth.service;
 
 import com.smarthealth.common.BusinessException;
 import com.smarthealth.common.ResultCode;
-import com.smarthealth.config.DeepSeekConfig;
+import com.smarthealth.config.OllamaConfig;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,42 +19,41 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class DeepSeekService {
+public class OllamaAiService implements AiChatService {
 
-    private final DeepSeekConfig deepSeekConfig;
-    private final RestTemplate deepSeekRestTemplate;
+    private static final Logger log = LoggerFactory.getLogger(OllamaAiService.class);
 
+    private final OllamaConfig ollamaConfig;
+    private final RestTemplate ollamaRestTemplate;
+
+    @Override
     public String chat(String systemPrompt, String userPrompt) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(deepSeekConfig.getApiKey());
 
         Map<String, Object> requestBody = Map.of(
-                "model", deepSeekConfig.getModel(),
+                "model", ollamaConfig.getModel(),
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)
                 ),
-                "response_format", Map.of("type", "json_object")
+                "stream", false
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<Map> response = deepSeekRestTemplate.postForEntity(
-                    deepSeekConfig.getUrl(), request, Map.class);
+            ResponseEntity<Map> response = ollamaRestTemplate.postForEntity(
+                    ollamaConfig.getUrl() + "/api/chat", request, Map.class);
             Map body = response.getBody();
-            if (body == null || !body.containsKey("choices")) {
-                throw new BusinessException(ResultCode.AI_SERVICE_ERROR, "DeepSeek 返回格式异常");
+            if (body == null || !body.containsKey("message")) {
+                throw new BusinessException(ResultCode.AI_SERVICE_ERROR, "Ollama 返回格式异常");
             }
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) body.get("choices");
-            if (choices.isEmpty()) {
-                throw new BusinessException(ResultCode.AI_SERVICE_ERROR, "DeepSeek 返回空结果");
-            }
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            Map<String, Object> message = (Map<String, Object>) body.get("message");
             return (String) message.get("content");
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.AI_SERVICE_ERROR, "AI 服务调用失败: " + e.getMessage());
+            log.error("Ollama 服务调用失败", e);
+            throw new BusinessException(ResultCode.AI_SERVICE_ERROR, "AI 服务异常，请稍后重试");
         }
     }
 }

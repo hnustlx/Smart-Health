@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Map;
-
 @Data
 @AllArgsConstructor
 @Schema(description = "健康检查响应")
@@ -20,8 +18,4 @@ public class HealthResponse {
     @JsonProperty("chroma")
     @Schema(description = "Chroma 连接状态", example = "UP")
     private String chroma;
-
-    @JsonProperty("deepseek")
-    @Schema(description = "DeepSeek API 状态", example = "UP")
-    private String deepseek;
 }

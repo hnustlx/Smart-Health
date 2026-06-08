@@ -29,12 +29,12 @@ public class PlanService {
     private final PlanGenerateRecordMapper generateRecordMapper;
     private final ProfileMapper profileMapper;
     private final WeightService weightService;
-    private final DeepSeekService deepSeekService;
+    private final AiRoutingService aiRoutingService;
     private final RagService ragService;
     private final ObjectMapper objectMapper;
 
     private static final Logger log = LoggerFactory.getLogger(PlanService.class);
-    private static final int USER_DAILY_LIMIT = 2;
+    private static final int USER_DAILY_LIMIT = 3;
     private static final int VIP_DAILY_LIMIT = 5;
 
     @Transactional(rollbackFor = Exception.class)
@@ -61,7 +61,7 @@ public class PlanService {
         String userPrompt = buildUserPrompt(profile, trendSummary, ragResults);
         String systemPrompt = buildSystemPrompt(role);
 
-        String aiResponse = deepSeekService.chat(systemPrompt, userPrompt);
+        String aiResponse = aiRoutingService.chat(userId, role, systemPrompt, userPrompt);
 
         Map<String, Object> planContent;
         try {
@@ -151,16 +151,7 @@ public class PlanService {
     }
 
     private void incrementGenerateCount(Long userId) {
-        PlanGenerateRecord record = generateRecordMapper.findByUserIdAndDate(userId, LocalDate.now());
-        if (record == null) {
-            record = new PlanGenerateRecord();
-            record.setUserId(userId);
-            record.setGenerateDate(LocalDate.now());
-            record.setGenerateCount(1);
-            generateRecordMapper.insert(record);
-        } else {
-            generateRecordMapper.updateCount(record.getId(), record.getGenerateCount() + 1);
-        }
+        generateRecordMapper.upsertCount(userId, LocalDate.now());
     }
 
     private String buildSystemPrompt(String role) {

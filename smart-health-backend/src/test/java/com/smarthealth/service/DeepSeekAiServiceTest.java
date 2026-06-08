@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeepSeekServiceTest {
+class DeepSeekAiServiceTest {
 
     @Mock
     private DeepSeekConfig deepSeekConfig;
@@ -28,7 +28,7 @@ class DeepSeekServiceTest {
     private RestTemplate deepSeekRestTemplate;
 
     @InjectMocks
-    private DeepSeekService deepSeekService;
+    private DeepSeekAiService deepSeekAiService;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +47,7 @@ class DeepSeekServiceTest {
         when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(ResponseEntity.ok(responseBody));
 
-        String result = deepSeekService.chat("system prompt", "user prompt");
+        String result = deepSeekAiService.chat("system prompt", "user prompt");
 
         assertEquals("{\"dietPlan\":[]}", result);
     }
@@ -59,7 +59,7 @@ class DeepSeekServiceTest {
                 .thenReturn(ResponseEntity.ok(responseBody));
 
         assertThrows(com.smarthealth.common.BusinessException.class,
-                () -> deepSeekService.chat("system", "user"));
+                () -> deepSeekAiService.chat("system", "user"));
     }
 
     @Test
@@ -69,7 +69,7 @@ class DeepSeekServiceTest {
                 .thenReturn(ResponseEntity.ok(responseBody));
 
         assertThrows(com.smarthealth.common.BusinessException.class,
-                () -> deepSeekService.chat("system", "user"));
+                () -> deepSeekAiService.chat("system", "user"));
     }
 
     @Test
@@ -78,6 +78,6 @@ class DeepSeekServiceTest {
                 .thenThrow(new RuntimeException("Connection timeout"));
 
         assertThrows(com.smarthealth.common.BusinessException.class,
-                () -> deepSeekService.chat("system", "user"));
+                () -> deepSeekAiService.chat("system", "user"));
     }
 }

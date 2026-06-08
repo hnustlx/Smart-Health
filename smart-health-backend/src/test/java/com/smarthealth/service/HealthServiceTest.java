@@ -2,7 +2,6 @@
 package com.smarthealth.service;
 
 import com.smarthealth.config.ChromaConfig;
-import com.smarthealth.config.DeepSeekConfig;
 import com.smarthealth.dto.response.HealthResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,9 +26,6 @@ class HealthServiceTest {
     private ChromaConfig chromaConfig;
 
     @Mock
-    private DeepSeekConfig deepSeekConfig;
-
-    @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
@@ -43,13 +39,11 @@ class HealthServiceTest {
         when(chromaConfig.getUrl()).thenReturn("http://localhost:8000");
         when(restTemplate.getForEntity("http://localhost:8000/api/v1/heartbeat", String.class))
                 .thenReturn(null);
-        when(deepSeekConfig.getApiKey()).thenReturn("sk-test-key");
 
         HealthResponse response = healthService.check();
 
         assertEquals("UP", response.getMysql());
         assertEquals("UP", response.getChroma());
-        assertEquals("UP", response.getDeepseek());
     }
 
     @Test
@@ -58,13 +52,11 @@ class HealthServiceTest {
         when(chromaConfig.getUrl()).thenReturn("http://localhost:8000");
         when(restTemplate.getForEntity("http://localhost:8000/api/v1/heartbeat", String.class))
                 .thenReturn(null);
-        when(deepSeekConfig.getApiKey()).thenReturn("sk-test-key");
 
         HealthResponse response = healthService.check();
 
         assertEquals("DOWN", response.getMysql());
         assertEquals("UP", response.getChroma());
-        assertEquals("UP", response.getDeepseek());
     }
 
     @Test
@@ -75,29 +67,10 @@ class HealthServiceTest {
         when(chromaConfig.getUrl()).thenReturn("http://localhost:8000");
         when(restTemplate.getForEntity("http://localhost:8000/api/v1/heartbeat", String.class))
                 .thenThrow(new RuntimeException("Connection refused"));
-        when(deepSeekConfig.getApiKey()).thenReturn("sk-test-key");
 
         HealthResponse response = healthService.check();
 
         assertEquals("UP", response.getMysql());
         assertEquals("DOWN", response.getChroma());
-        assertEquals("UP", response.getDeepseek());
-    }
-
-    @Test
-    void check_shouldReturnDOWN_whenNoDeepSeekKey() throws Exception {
-        Connection conn = mock(Connection.class);
-        when(dataSource.getConnection()).thenReturn(conn);
-        when(conn.isValid(2)).thenReturn(true);
-        when(chromaConfig.getUrl()).thenReturn("http://localhost:8000");
-        when(restTemplate.getForEntity("http://localhost:8000/api/v1/heartbeat", String.class))
-                .thenReturn(null);
-        when(deepSeekConfig.getApiKey()).thenReturn("${DEEPSEEK_API_KEY}");
-
-        HealthResponse response = healthService.check();
-
-        assertEquals("UP", response.getMysql());
-        assertEquals("UP", response.getChroma());
-        assertEquals("DOWN", response.getDeepseek());
     }
 }

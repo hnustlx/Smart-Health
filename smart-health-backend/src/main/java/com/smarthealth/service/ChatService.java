@@ -21,9 +21,9 @@ public class ChatService {
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     private final RagService ragService;
-    private final DeepSeekService deepSeekService;
+    private final AiRoutingService aiRoutingService;
 
-    public ChatResponse askQuestion(String role, ChatRequest request) {
+    public ChatResponse askQuestion(Long userId, String role, ChatRequest request) {
         if (!"VIP".equals(role)) {
             throw new BusinessException(ResultCode.FORBIDDEN, "智能健康问答为 VIP 专属功能");
         }
@@ -53,7 +53,7 @@ public class ChatService {
                 ? request.getQuestion()
                 : "参考知识：\n" + context + "\n\n用户问题：" + request.getQuestion();
 
-        String answer = deepSeekService.chat(systemPrompt, userPrompt);
+        String answer = aiRoutingService.chat(userId, role, systemPrompt, userPrompt);
 
         List<ChatResponse.ReferenceItem> references = ragResults.stream()
                 .map(r -> {

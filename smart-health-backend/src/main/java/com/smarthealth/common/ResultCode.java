@@ -11,6 +11,7 @@ public enum ResultCode {
     NOT_FOUND(404, "数据不存在"),
     CONFLICT(409, "数据冲突"),
     INTERNAL_ERROR(500, "系统异常"),
+    TOO_MANY_REQUESTS(429, "请求过于频繁"),
     AI_SERVICE_ERROR(600, "AI 服务调用失败"),
     CHROMA_ERROR(601, "Chroma 检索失败");
 

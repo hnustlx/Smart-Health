@@ -25,7 +25,7 @@ class ChatServiceTest {
     private RagService ragService;
 
     @Mock
-    private DeepSeekService deepSeekService;
+    private AiRoutingService aiRoutingService;
 
     @InjectMocks
     private ChatService chatService;
@@ -45,9 +45,10 @@ class ChatServiceTest {
                 "metadata", Map.of("title", "减脂指南", "category", "饮食")
         );
         when(ragService.query(anyString(), anyInt(), eq("VIP"))).thenReturn(List.of(ragItem));
-        when(deepSeekService.chat(anyString(), anyString())).thenReturn("减脂期间晚餐建议控制总热量摄入");
+        when(aiRoutingService.chat(anyLong(), anyString(), anyString(), anyString()))
+                .thenReturn("减脂期间晚餐建议控制总热量摄入");
 
-        ChatResponse response = chatService.askQuestion("VIP", request);
+        ChatResponse response = chatService.askQuestion(1L, "VIP", request);
 
         assertNotNull(response);
         assertTrue(response.getAnswer().contains("减脂"));
@@ -58,16 +59,17 @@ class ChatServiceTest {
     @Test
     void askQuestion_shouldThrow_whenUSER() {
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> chatService.askQuestion("USER", request));
+                () -> chatService.askQuestion(1L, "USER", request));
         assertEquals(403, ex.getCode());
     }
 
     @Test
     void askQuestion_shouldWork_withoutRagResults() {
         when(ragService.query(anyString(), anyInt(), eq("VIP"))).thenReturn(List.of());
-        when(deepSeekService.chat(anyString(), anyString())).thenReturn("合理饮食建议");
+        when(aiRoutingService.chat(anyLong(), anyString(), anyString(), anyString()))
+                .thenReturn("合理饮食建议");
 
-        ChatResponse response = chatService.askQuestion("VIP", request);
+        ChatResponse response = chatService.askQuestion(1L, "VIP", request);
 
         assertNotNull(response);
         assertTrue(response.getAnswer().contains("合理饮食"));
@@ -78,9 +80,10 @@ class ChatServiceTest {
     void askQuestion_shouldFallback_whenChromaUnavailable() {
         when(ragService.query(anyString(), anyInt(), eq("VIP")))
                 .thenThrow(new RuntimeException("Chroma connection refused"));
-        when(deepSeekService.chat(anyString(), anyString())).thenReturn("无RAG时的回答");
+        when(aiRoutingService.chat(anyLong(), anyString(), anyString(), anyString()))
+                .thenReturn("无RAG时的回答");
 
-        ChatResponse response = chatService.askQuestion("VIP", request);
+        ChatResponse response = chatService.askQuestion(1L, "VIP", request);
 
         assertNotNull(response);
         assertTrue(response.getAnswer().contains("无RAG时的回答"));

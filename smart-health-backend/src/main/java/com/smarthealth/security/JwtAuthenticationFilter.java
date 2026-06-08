@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             User user = userMapper.findById(userId);
             if (user == null || user.getStatus() == 0) {
-                filterChain.doFilter(request, response);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "用户不存在或已被禁用");
                 return;
             }
 

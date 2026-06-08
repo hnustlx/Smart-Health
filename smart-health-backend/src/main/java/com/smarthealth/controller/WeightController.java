@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 @Tag(name = "体重记录", description = "用户体重记录管理")
 @RestController
 @RequestMapping("/api/v1/weight")
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class WeightController {
 

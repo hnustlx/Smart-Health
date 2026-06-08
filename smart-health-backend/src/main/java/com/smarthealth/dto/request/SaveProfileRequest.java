@@ -2,8 +2,7 @@
 package com.smarthealth.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -12,6 +11,8 @@ import java.math.BigDecimal;
 public class SaveProfileRequest {
 
     @NotNull(message = "年龄不能为空")
+    @Min(value = 1, message = "年龄必须大于0")
+    @Max(value = 150, message = "年龄不能超过150")
     @Schema(description = "年龄", example = "22")
     private Integer age;
 
@@ -20,10 +21,14 @@ public class SaveProfileRequest {
     private String gender;
 
     @NotNull(message = "身高不能为空")
+    @DecimalMin(value = "20.0", message = "身高不能低于20cm")
+    @DecimalMax(value = "300.0", message = "身高不能超过300cm")
     @Schema(description = "身高(cm)", example = "175.0")
     private BigDecimal height;
 
     @NotNull(message = "体重不能为空")
+    @DecimalMin(value = "10.0", message = "体重不能低于10kg")
+    @DecimalMax(value = "600.0", message = "体重不能超过600kg")
     @Schema(description = "体重(kg)", example = "80.0")
     private BigDecimal weight;
 

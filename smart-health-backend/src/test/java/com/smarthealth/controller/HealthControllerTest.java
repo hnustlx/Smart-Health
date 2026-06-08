@@ -35,26 +35,24 @@ class HealthControllerTest {
     @Test
     void health_shouldReturn200() throws Exception {
         when(healthService.check())
-                .thenReturn(new HealthResponse("UP", "UP", "UP"));
+                .thenReturn(new HealthResponse("UP", "UP"));
 
         mockMvc.perform(get("/api/v1/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.mysql").value("UP"))
-                .andExpect(jsonPath("$.data.chroma").value("UP"))
-                .andExpect(jsonPath("$.data.deepseek").value("UP"));
+                .andExpect(jsonPath("$.data.chroma").value("UP"));
     }
 
     @Test
     void health_shouldShowDownServices() throws Exception {
         when(healthService.check())
-                .thenReturn(new HealthResponse("UP", "DOWN", "DOWN"));
+                .thenReturn(new HealthResponse("UP", "DOWN"));
 
         mockMvc.perform(get("/api/v1/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.mysql").value("UP"))
-                .andExpect(jsonPath("$.data.chroma").value("DOWN"))
-                .andExpect(jsonPath("$.data.deepseek").value("DOWN"));
+                .andExpect(jsonPath("$.data.chroma").value("DOWN"));
     }
 }

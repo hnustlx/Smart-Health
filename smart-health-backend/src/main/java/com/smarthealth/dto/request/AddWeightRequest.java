@@ -2,6 +2,8 @@
 package com.smarthealth.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -12,6 +14,8 @@ import java.time.LocalDate;
 public class AddWeightRequest {
 
     @NotNull(message = "体重不能为空")
+    @DecimalMin(value = "10.0", message = "体重不能低于10kg")
+    @DecimalMax(value = "600.0", message = "体重不能超过600kg")
     @Schema(description = "体重(kg)", example = "79.5")
     private BigDecimal weight;
 

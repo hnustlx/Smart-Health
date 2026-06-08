@@ -42,7 +42,7 @@ class PlanServiceTest {
     private WeightService weightService;
 
     @Mock
-    private DeepSeekService deepSeekService;
+    private AiRoutingService aiRoutingService;
 
     @Mock
     private RagService ragService;
@@ -112,8 +112,8 @@ class PlanServiceTest {
         GenerateCountResponse count = planService.getGenerateCount(1L, "USER");
 
         assertEquals(0, count.getUsed());
-        assertEquals(2, count.getLimit());
-        assertEquals(2, count.getRemaining());
+        assertEquals(3, count.getLimit());
+        assertEquals(3, count.getRemaining());
     }
 
     @Test
@@ -153,7 +153,7 @@ class PlanServiceTest {
         when(weightService.analyzeTrend(1L)).thenReturn("体重无明显变化");
         when(ragService.query(anyString(), anyInt(), anyString()))
                 .thenThrow(new RuntimeException("Chroma connection refused"));
-        when(deepSeekService.chat(anyString(), anyString()))
+        when(aiRoutingService.chat(anyLong(), anyString(), anyString(), anyString()))
                 .thenReturn("{\"dietPlan\":[{\"day\":1,\"breakfast\":\"燕麦粥\"}]"
                         + ",\"exercisePlan\":[{\"day\":1,\"type\":\"跑步\"}]}");
         when(objectMapper.readValue(anyString(), any(TypeReference.class)))

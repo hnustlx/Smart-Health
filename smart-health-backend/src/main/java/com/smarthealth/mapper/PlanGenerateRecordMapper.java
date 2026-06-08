@@ -13,4 +13,6 @@ public interface PlanGenerateRecordMapper {
     int insert(PlanGenerateRecord record);
 
     int updateCount(@Param("id") Long id, @Param("generateCount") Integer generateCount);
+
+    int upsertCount(@Param("userId") Long userId, @Param("generateDate") LocalDate generateDate);
 }

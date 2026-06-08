@@ -5,6 +5,8 @@ import com.smarthealth.common.BusinessException;
 import com.smarthealth.common.ResultCode;
 import com.smarthealth.config.ChromaConfig;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @RequiredArgsConstructor
 public class RagService {
+
+    private static final Logger log = LoggerFactory.getLogger(RagService.class);
 
     private final ChromaConfig chromaConfig;
     private final RestTemplate restTemplate;
@@ -38,10 +42,12 @@ public class RagService {
                     }
                 }
             } catch (Exception e) {
-                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma UUID 获取失败: " + e.getMessage());
+                log.error("Chroma UUID 获取失败", e);
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
             }
             if (uuid == null) {
-                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合未找到: " + chromaConfig.getCollectionName());
+                log.error("Chroma 集合未找到: {}", chromaConfig.getCollectionName());
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合未找到");
             }
         }
         return uuid;
@@ -67,7 +73,8 @@ public class RagService {
             restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Boolean.class);
             return knowledgeId;
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 写入失败: " + e.getMessage());
+            log.error("Chroma 写入失败", e);
+            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
         }
     }
 
@@ -80,7 +87,8 @@ public class RagService {
         try {
             restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Object.class);
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 更新失败: " + e.getMessage());
+            log.error("Chroma 更新失败", e);
+            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
         }
     }
 
@@ -91,7 +99,8 @@ public class RagService {
         try {
             restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Object.class);
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 删除失败: " + e.getMessage());
+            log.error("Chroma 删除失败", e);
+            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
         }
     }
 
@@ -122,7 +131,8 @@ public class RagService {
             try {
                 restTemplate.postForEntity(createUrl, new HttpEntity<>(body, jsonHeaders()), Map.class);
             } catch (Exception ex) {
-                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合创建失败: " + ex.getMessage());
+                log.error("Chroma 集合创建失败", ex);
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
             }
         }
         refreshCollectionUuid();
@@ -190,7 +200,8 @@ public class RagService {
             }
             return results;
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, errorMessage + ": " + e.getMessage());
+            log.error("Chroma 操作失败: {}", errorMessage, e);
+            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 服务异常，请稍后重试");
         }
     }
 

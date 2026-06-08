@@ -2,7 +2,6 @@
 package com.smarthealth.service;
 
 import com.smarthealth.config.ChromaConfig;
-import com.smarthealth.config.DeepSeekConfig;
 import com.smarthealth.dto.response.HealthResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,15 +20,10 @@ public class HealthService {
 
     private final DataSource dataSource;
     private final ChromaConfig chromaConfig;
-    private final DeepSeekConfig deepSeekConfig;
     private final RestTemplate restTemplate;
 
     public HealthResponse check() {
-        return new HealthResponse(
-                checkMysql(),
-                checkChroma(),
-                checkDeepSeek()
-        );
+        return new HealthResponse(checkMysql(), checkChroma());
     }
 
     private String checkMysql() {
@@ -53,13 +47,5 @@ public class HealthService {
             log.warn("Chroma health check failed: {}", e.getMessage());
             return "DOWN";
         }
-    }
-
-    private String checkDeepSeek() {
-        if (deepSeekConfig.getApiKey() != null && !deepSeekConfig.getApiKey().isBlank()
-                && !deepSeekConfig.getApiKey().startsWith("${")) {
-            return "UP";
-        }
-        return "DOWN";
     }
 }

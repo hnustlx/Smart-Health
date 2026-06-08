@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,8 +37,8 @@ public class AdminUserController {
 
     @Operation(summary = "查询用户列表")
     @GetMapping
-    public Result<Map<String, Object>> listUsers(@RequestParam(defaultValue = "1") int page,
-                                                  @RequestParam(defaultValue = "10") int size,
+    public Result<Map<String, Object>> listUsers(@RequestParam(defaultValue = "1") @Min(1) int page,
+                                                   @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
                                                   @RequestParam(required = false) String keyword) {
         int offset = (page - 1) * size;
         List<User> users = userMapper.findByPage(keyword, offset, size);

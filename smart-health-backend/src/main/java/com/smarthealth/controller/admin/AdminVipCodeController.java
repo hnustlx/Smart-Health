@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ public class AdminVipCodeController {
 
     @Operation(summary = "生成VIP激活码")
     @PostMapping("/generate")
-    public Result<Map<String, Object>> generateCodes(@RequestParam(defaultValue = "1") int count,
+    public Result<Map<String, Object>> generateCodes(@RequestParam(defaultValue = "1") @Min(1) @Max(100) int count,
                                                      @AuthenticationPrincipal UserPrincipal principal) {
         List<String> codes = vipCodeService.generateCodes(count, principal.getUserId());
         return Result.success(Map.of("codes", codes, "count", codes.size()));

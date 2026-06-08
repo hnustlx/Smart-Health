@@ -2,6 +2,7 @@
 package com.smarthealth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smarthealth.common.RateLimitService;
 import com.smarthealth.dto.request.LoginRequest;
 import com.smarthealth.dto.request.RegisterRequest;
 import com.smarthealth.dto.response.LoginResponse;
@@ -9,6 +10,7 @@ import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.service.UserService;
 import com.smarthealth.service.VipCodeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,7 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,11 +46,19 @@ class UserControllerTest {
     @MockBean
     private VipCodeService vipCodeService;
 
+    @MockBean
+    private RateLimitService rateLimitService;
+
+    @BeforeEach
+    void setUp() {
+        when(rateLimitService.isAllowed(anyString(), anyInt(), any())).thenReturn(true);
+    }
+
     @Test
     void register_shouldReturn200() throws Exception {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("newuser");
-        request.setPassword("123456");
+        request.setPassword("Test123456");
 
         mockMvc.perform(post("/api/v1/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +71,7 @@ class UserControllerTest {
     void login_shouldReturnToken() throws Exception {
         LoginRequest request = new LoginRequest();
         request.setUsername("testuser");
-        request.setPassword("123456");
+        request.setPassword("Test123456");
 
         when(userService.login(any())).thenReturn(
                 new LoginResponse("token", 1L, "testuser", "USER"));
@@ -78,7 +88,7 @@ class UserControllerTest {
     void register_shouldReturn400_whenUsernameEmpty() throws Exception {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("");
-        request.setPassword("123456");
+        request.setPassword("Test123456");
 
         mockMvc.perform(post("/api/v1/user/register")
                         .contentType(MediaType.APPLICATION_JSON)

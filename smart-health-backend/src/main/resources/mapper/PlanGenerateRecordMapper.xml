@@ -23,4 +23,10 @@
     <update id="updateCount">
         UPDATE plan_generate_record SET generate_count = #{generateCount} WHERE id = #{id}
     </update>
+
+    <insert id="upsertCount">
+        INSERT INTO plan_generate_record (user_id, generate_date, generate_count)
+        VALUES (#{userId}, #{generateDate}, 1)
+        ON DUPLICATE KEY UPDATE generate_count = generate_count + 1
+    </insert>
 </mapper>

@@ -1,0 +1,77 @@
+{
+  "project": "Smart Health - AI Routing + Security Hardening",
+  "created": "2026-06-09",
+  "phases": {
+    "phase1_security_emergency": {
+      "order": 1,
+      "description": "安全紧急修复（CRITICAL + HIGH）",
+      "tasks": [
+        "【安全 - CRITICAL】轮换 DeepSeek API Key，.env 改为占位符，确认 .gitignore 生效",
+        "【安全 - HIGH】登录 /login 加 IP 限流（5次/分钟）",
+        "【安全 - HIGH】注册 /register 加 IP 限流（3次/小时）"
+      ]
+    },
+    "phase2_core_function": {
+      "order": 2,
+      "description": "AI 自定义 Key 路由功能",
+      "tasks": [
+        "【功能】V8 migration：创建 user_ai_config 表",
+        "【功能】创建 entity/UserAiConfig + mapper/UserAiConfigMapper + XML",
+        "【功能】创建 dto/request/AiConfigRequest + dto/response/AiConfigResponse（Key 脱敏）",
+        "【功能】创建 controller/AiConfigController（CRUD + 保存时测试连接）",
+        "【功能】创建 service/UserAiConfigService（业务+脱敏+测试连接）",
+        "【功能】创建 service/AiRoutingService（按 userId+role 路由 CUSTOM/LOCAL/DEFAULT）",
+        "【功能】DeepSeekAiService 加 @Service + chat(apiKey,url,model,system,user) 重载",
+        "【功能】OllamaAiService 加 @Service",
+        "【功能】PlanService：USER_DAILY_LIMIT 2→3，注入 AiRoutingService 替代 AiChatService",
+        "【功能】ChatService：注入 AiRoutingService 替代 AiChatService",
+        "【功能】删除 AiProviderConfig.java（不再需要条件注入）"
+      ]
+    },
+    "phase3_security_hardening": {
+      "order": 3,
+      "description": "安全加固（MEDIUM）",
+      "tasks": [
+        "【安全 - MEDIUM】application.yml 移除 JWT Secret / MySQL 密码硬编码默认值，启动时校验强制环境变量",
+        "【安全 - MEDIUM】RegisterRequest 密码加 @Size(min=8) + @Pattern（大小写+数字）",
+        "【安全 - MEDIUM】SaveProfileRequest age 加 @Min/@Max，height/weight 加 @DecimalMin/@DecimalMax",
+        "【安全 - MEDIUM】AddWeightRequest weight 加 @DecimalMin/@DecimalMax",
+        "【安全 - MEDIUM】AdminVipCodeController count 参数加 @Max(100)",
+        "【安全 - MEDIUM】AdminUserController page/size 加 @Min/@Max",
+        "【安全 - MEDIUM】修复所有 e.getMessage() 信息泄露 → 改用通用错误消息，详细信息记日志",
+        "【安全 - MEDIUM】CORS：WebConfig 限定具体前端域名，移除 wildcard *",
+        "【安全 - MEDIUM】PlanController/ProfileController/WeightController 加 @PreAuthorize 类级别",
+        "【安全 - MEDIUM】替换 V6 seed 中 admin123 密码，或加首次登录强制改密"
+      ]
+    },
+    "phase4_security_low": {
+      "order": 4,
+      "description": "低优先级安全修复（LOW）",
+      "tasks": [
+        "【安全 - LOW】JwtAuthenticationFilter 修复：无效/禁用用户 token 返回 401 而非继续",
+        "【安全 - LOW】HealthResponse 移除 aiProvider/aiService 字段，改为只返回基础 UP/DOWN",
+        "【安全 - LOW】Swagger UI 生产环境限制为 admin 可访问",
+        "【安全 - LOW】修复 PlanService.incrementGenerateCount 竞态条件（INSERT ON DUPLICATE KEY UPDATE）"
+      ]
+    },
+    "phase5_testing_and_docs": {
+      "order": 5,
+      "description": "测试 + 文档 + 验收",
+      "tasks": [
+        "【测试】AiRoutingServiceTest：路由逻辑 3 个场景（CUSTOM/LOCAL/DEFAULT）",
+        "【测试】UserAiConfigServiceTest：脱敏 + 测试连接 + CRUD",
+        "【测试】AiConfigControllerTest：CRUD + 权限校验（只能操作自己的配置）",
+        "【测试】更新 PlanServiceTest：limit 检查 2→3，mock AiRoutingService",
+        "【测试】更新 ChatServiceTest：mock AiRoutingService",
+        "【测试】安全专项测试：限流 + XSS + 信息泄露 + 输入边界 + CORS",
+        "【文档】更新验收标准文档.md：新增 AI 自定义 Key + 安全验收章节",
+        "【文档】更新接口文档.md：新增 /ai-config 接口",
+        "【文档】更新数据库文档.md：新增 user_ai_config 表",
+        "【验收】确认所有 116+ 原有测试通过 + 新增测试通过",
+        "【验收】安全验收清单（Key 脱敏、限流、输入校验、CORS、无敏感泄露）全部通过",
+        "【验收】最终 git commit + push 到 dev 分支"
+      ]
+    }
+  },
+  "total_tasks": 40
+}
