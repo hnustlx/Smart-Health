@@ -2,12 +2,14 @@
 package com.smarthealth.controller.admin;
 
 import com.smarthealth.common.Result;
+import com.smarthealth.dto.response.AdminUserResponse;
 import com.smarthealth.dto.response.WeightRecordResponse;
 import com.smarthealth.dto.response.PlanHistoryResponse;
-import com.smarthealth.dto.response.UserResponse;
+import com.smarthealth.dto.response.ProfileResponse;
 import com.smarthealth.entity.User;
 import com.smarthealth.mapper.UserMapper;
 import com.smarthealth.service.PlanService;
+import com.smarthealth.service.ProfileService;
 import com.smarthealth.service.WeightService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,29 +31,38 @@ public class AdminUserController {
     private final UserMapper userMapper;
     private final WeightService weightService;
     private final PlanService planService;
+    private final ProfileService profileService;
 
     @Operation(summary = "查询用户列表")
     @GetMapping
     public Result<Map<String, Object>> listUsers(@RequestParam(defaultValue = "1") int page,
                                                   @RequestParam(defaultValue = "10") int size,
                                                   @RequestParam(required = false) String keyword) {
-        List<User> users = userMapper.findAll();
-        List<UserResponse> records = users.stream()
-                .map(u -> new UserResponse(u.getId(), u.getUsername(), u.getRole(),
-                        u.getStatus(), u.getVipExpireTime() != null ? u.getVipExpireTime().toString() : null))
+        int offset = (page - 1) * size;
+        List<User> users = userMapper.findByPage(keyword, offset, size);
+        long total = userMapper.countByKeyword(keyword);
+        List<AdminUserResponse> records = users.stream()
+                .map(u -> new AdminUserResponse(
+                        u.getId(), u.getUsername(), u.getRole(),
+                        u.getStatus(),
+                        u.getVipExpireTime() != null ? u.getVipExpireTime().toString() : null,
+                        u.getCreateTime()))
                 .collect(Collectors.toList());
-        return Result.success(Map.of("total", (long) users.size(), "records", records));
+        return Result.success(Map.of("total", total, "records", records));
     }
 
     @Operation(summary = "查询用户详情")
     @GetMapping("/{id}")
-    public Result<UserResponse> getUserDetail(@PathVariable Long id) {
+    public Result<AdminUserResponse> getUserDetail(@PathVariable Long id) {
         User user = userMapper.findById(id);
         if (user == null) {
             return Result.error(404, "用户不存在");
         }
-        return Result.success(new UserResponse(user.getId(), user.getUsername(), user.getRole(),
-                user.getStatus(), user.getVipExpireTime() != null ? user.getVipExpireTime().toString() : null));
+        return Result.success(new AdminUserResponse(
+                user.getId(), user.getUsername(), user.getRole(),
+                user.getStatus(),
+                user.getVipExpireTime() != null ? user.getVipExpireTime().toString() : null,
+                user.getCreateTime()));
     }
 
     @Operation(summary = "启用用户")
@@ -78,5 +89,25 @@ public class AdminUserController {
     @GetMapping("/{id}/plans")
     public Result<List<PlanHistoryResponse>> getUserPlans(@PathVariable Long id) {
         return Result.success(planService.getHistory(id));
+    }
+
+    @Operation(summary = "查看用户健康档案")
+    @GetMapping("/{id}/profile")
+    public Result<ProfileResponse> getUserProfile(@PathVariable Long id) {
+        return Result.success(profileService.getProfile(id));
+    }
+
+    @Operation(summary = "管理员删除体重记录")
+    @DeleteMapping("/weights/{recordId}")
+    public Result<Void> deleteWeightRecord(@PathVariable Long recordId) {
+        weightService.deleteWeightAsAdmin(recordId);
+        return Result.success("删除成功", null);
+    }
+
+    @Operation(summary = "管理员删除计划记录")
+    @DeleteMapping("/plans/{planId}")
+    public Result<Void> deletePlanRecord(@PathVariable Long planId) {
+        planService.deletePlan(planId);
+        return Result.success("删除成功", null);
     }
 }

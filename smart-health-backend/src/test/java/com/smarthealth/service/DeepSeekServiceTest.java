@@ -1,0 +1,83 @@
+package com.smarthealth.service;
+
+import com.smarthealth.config.DeepSeekConfig;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class DeepSeekServiceTest {
+
+    @Mock
+    private DeepSeekConfig deepSeekConfig;
+
+    @Mock
+    private RestTemplate deepSeekRestTemplate;
+
+    @InjectMocks
+    private DeepSeekService deepSeekService;
+
+    @BeforeEach
+    void setUp() {
+        when(deepSeekConfig.getUrl()).thenReturn("https://api.deepseek.com/v1/chat/completions");
+        when(deepSeekConfig.getApiKey()).thenReturn("test-api-key");
+        when(deepSeekConfig.getModel()).thenReturn("deepseek-chat");
+    }
+
+    @Test
+    void chat_shouldReturnContent() {
+        Map<String, Object> responseBody = Map.of(
+                "choices", List.of(
+                        Map.of("message", Map.of("content", "{\"dietPlan\":[]}"))
+                )
+        );
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        String result = deepSeekService.chat("system prompt", "user prompt");
+
+        assertEquals("{\"dietPlan\":[]}", result);
+    }
+
+    @Test
+    void chat_shouldThrow_whenEmptyChoices() {
+        Map<String, Object> responseBody = Map.of("choices", List.of());
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        assertThrows(com.smarthealth.common.BusinessException.class,
+                () -> deepSeekService.chat("system", "user"));
+    }
+
+    @Test
+    void chat_shouldThrow_whenNoChoicesKey() {
+        Map<String, Object> responseBody = Map.of("error", "invalid");
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        assertThrows(com.smarthealth.common.BusinessException.class,
+                () -> deepSeekService.chat("system", "user"));
+    }
+
+    @Test
+    void chat_shouldThrow_whenApiFails() {
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RuntimeException("Connection timeout"));
+
+        assertThrows(com.smarthealth.common.BusinessException.class,
+                () -> deepSeekService.chat("system", "user"));
+    }
+}

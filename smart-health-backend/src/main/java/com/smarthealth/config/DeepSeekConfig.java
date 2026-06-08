@@ -2,9 +2,13 @@ package com.smarthealth.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
 
 @Data
 @Configuration
@@ -17,6 +21,9 @@ public class DeepSeekConfig {
 
     @Bean
     public RestTemplate deepSeekRestTemplate() {
-        return new RestTemplate();
+        java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(30))
+                .build();
+        return new RestTemplate(new JdkClientHttpRequestFactory(httpClient));
     }
 }

@@ -11,6 +11,7 @@ import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.security.UserPrincipal;
 import com.smarthealth.service.PlanService;
+import com.smarthealth.service.ProfileService;
 import com.smarthealth.service.WeightService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,9 @@ class AdminUserControllerTest {
     private PlanService planService;
 
     @MockBean
+    private ProfileService profileService;
+
+    @MockBean
     private JwtTokenProvider jwtTokenProvider;
 
     @MockBean
@@ -75,13 +79,17 @@ class AdminUserControllerTest {
         testUser.setUsername("testuser");
         testUser.setRole("USER");
         testUser.setStatus(1);
+        testUser.setCreateTime(LocalDateTime.of(2026, 6, 8, 10, 0, 0));
 
-        when(userMapper.findAll()).thenReturn(List.of(testUser));
+        when(userMapper.findByPage(null, 0, 10)).thenReturn(List.of(testUser));
+        when(userMapper.countByKeyword(null)).thenReturn(1L);
 
         mockMvc.perform(get("/api/v1/admin/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data.total").value(1));
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.records[0].id").value(1))
+                .andExpect(jsonPath("$.data.records[0].createTime").exists());
     }
 
     @Test
@@ -97,6 +105,7 @@ class AdminUserControllerTest {
         mockMvc.perform(get("/api/v1/admin/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.username").value("testuser"));
     }
 
@@ -145,5 +154,32 @@ class AdminUserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].planType").value("COMBINED"));
+    }
+
+    @Test
+    void getUserProfile_shouldReturn200() throws Exception {
+        var profile = new com.smarthealth.dto.response.ProfileResponse(
+                1L, 22, "男", BigDecimal.valueOf(175), BigDecimal.valueOf(80),
+                "较低", "少油少糖", "减脂");
+        when(profileService.getProfile(1L)).thenReturn(profile);
+
+        mockMvc.perform(get("/api/v1/admin/users/1/profile"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.age").value(22));
+    }
+
+    @Test
+    void deleteWeightRecord_shouldReturn200() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/users/weights/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    void deletePlanRecord_shouldReturn200() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/users/plans/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
     }
 }

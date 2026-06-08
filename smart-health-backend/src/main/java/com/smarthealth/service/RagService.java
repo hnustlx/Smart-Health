@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -19,77 +20,109 @@ public class RagService {
 
     private final ChromaConfig chromaConfig;
     private final RestTemplate restTemplate;
+    private final AtomicReference<String> collectionUuid = new AtomicReference<>();
 
-    public void addKnowledge(String document, Map<String, String> metadata) {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/add";
+    private String getCollectionUuid() {
+        String uuid = collectionUuid.get();
+        if (uuid == null) {
+            String listUrl = chromaConfig.getUrl() + "/api/v1/collections";
+            try {
+                List<Map<String, Object>> collections = restTemplate.getForEntity(listUrl, List.class).getBody();
+                if (collections != null) {
+                    for (Map<String, Object> col : collections) {
+                        if (chromaConfig.getCollectionName().equals(col.get("name"))) {
+                            uuid = (String) col.get("id");
+                            collectionUuid.set(uuid);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma UUID 获取失败: " + e.getMessage());
+            }
+            if (uuid == null) {
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合未找到: " + chromaConfig.getCollectionName());
+            }
+        }
+        return uuid;
+    }
+
+    private void refreshCollectionUuid() {
+        collectionUuid.set(null);
+        getCollectionUuid();
+    }
+
+    private String dataPath() {
+        return "/api/v1/collections/" + getCollectionUuid();
+    }
+
+    public String addKnowledge(String document, Map<String, String> metadata) {
+        String url = chromaConfig.getUrl() + dataPath() + "/add";
+        String knowledgeId = "knowledge_" + UUID.randomUUID().toString().substring(0, 8);
         Map<String, Object> body = new HashMap<>();
         body.put("documents", List.of(document));
         body.put("metadatas", List.of(metadata));
-        body.put("ids", List.of(UUID.randomUUID().toString()));
+        body.put("ids", List.of(knowledgeId));
         try {
-            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
+            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Boolean.class);
+            return knowledgeId;
         } catch (Exception e) {
             throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 写入失败: " + e.getMessage());
         }
     }
 
     public void updateKnowledge(String knowledgeId, String document, Map<String, String> metadata) {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/update";
+        String url = chromaConfig.getUrl() + dataPath() + "/update";
         Map<String, Object> body = new HashMap<>();
         body.put("ids", List.of(knowledgeId));
         if (document != null) body.put("documents", List.of(document));
         if (metadata != null) body.put("metadatas", List.of(metadata));
         try {
-            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
+            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Object.class);
         } catch (Exception e) {
             throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 更新失败: " + e.getMessage());
         }
     }
 
     public void deleteKnowledge(String knowledgeId) {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/delete";
+        String url = chromaConfig.getUrl() + dataPath() + "/delete";
         Map<String, Object> body = new HashMap<>();
         body.put("ids", List.of(knowledgeId));
         try {
-            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
+            restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Object.class);
         } catch (Exception e) {
             throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 删除失败: " + e.getMessage());
         }
     }
 
     public List<Map<String, Object>> query(String queryText, int nResults, String role) {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/query";
+        String url = chromaConfig.getUrl() + dataPath() + "/get";
         Map<String, Object> body = new HashMap<>();
-        body.put("query_texts", List.of(queryText));
-        body.put("n_results", nResults);
-        body.put("where", Map.of("status", "enabled"));
-
+        Map<String, Object> where = new HashMap<>();
+        where.put("status", "enabled");
         if ("USER".equals(role)) {
-            body.put("where_document", Map.of("$or", List.of(
-                    Map.of("level", "basic"), Map.of("level", "all")
-            )));
+            where.put("$or", List.of(Map.of("level", "basic"), Map.of("level", "all")));
         }
+        body.put("where", where);
+        body.put("where_document", Map.of("$contains", queryText));
+        body.put("limit", nResults);
 
         try {
             var response = restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
             Map<String, Object> responseBody = response.getBody();
             if (responseBody == null) return List.of();
 
-            List<List<Object>> documents = (List<List<Object>>) responseBody.get("documents");
-            List<List<Object>> metadatas = (List<List<Object>>) responseBody.get("metadatas");
-            List<List<Object>> ids = (List<List<Object>>) responseBody.get("ids");
+            List<Object> documents = (List<Object>) responseBody.get("documents");
+            List<Object> metadatas = (List<Object>) responseBody.get("metadatas");
+            List<Object> ids = (List<Object>) responseBody.get("ids");
 
             List<Map<String, Object>> results = new ArrayList<>();
-            if (documents != null && !documents.isEmpty()) {
-                for (int i = 0; i < documents.get(0).size(); i++) {
+            if (ids != null) {
+                for (int i = 0; i < ids.size(); i++) {
                     Map<String, Object> item = new HashMap<>();
-                    item.put("document", documents.get(0).get(i));
-                    if (metadatas != null && !metadatas.isEmpty()) {
-                        item.put("metadata", metadatas.get(0).get(i));
-                    }
-                    if (ids != null && !ids.isEmpty()) {
-                        item.put("id", ids.get(0).get(i));
-                    }
+                    item.put("id", ids.get(i));
+                    if (documents != null && i < documents.size()) item.put("document", documents.get(i));
+                    if (metadatas != null && i < metadatas.size()) item.put("metadata", metadatas.get(i));
                     results.add(item);
                 }
             }
@@ -113,10 +146,11 @@ public class RagService {
                 throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合创建失败: " + ex.getMessage());
             }
         }
+        refreshCollectionUuid();
     }
 
     public long count() {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/count";
+        String url = chromaConfig.getUrl() + dataPath() + "/count";
         try {
             var response = restTemplate.getForEntity(url, Long.class);
             return response.getBody() != null ? response.getBody() : 0;
@@ -125,16 +159,40 @@ public class RagService {
         }
     }
 
-    public List<Map<String, Object>> listKnowledge() {
-        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/get";
+    public List<Map<String, Object>> listKnowledge(String category, String keyword, String status, String level) {
+        String url = chromaConfig.getUrl() + dataPath() + "/get";
         try {
-            var response = restTemplate.postForEntity(url, new HttpEntity<>(null, jsonHeaders()), Map.class);
-            Map<String, Object> body = response.getBody();
-            if (body == null) return List.of();
+            Map<String, Object> body = new HashMap<>();
+            Map<String, Object> where = new HashMap<>();
+            List<Map<String, Object>> conditions = new ArrayList<>();
+            if (category != null && !category.isEmpty()) {
+                conditions.add(Map.of("category", category));
+            }
+            if (status != null && !status.isEmpty()) {
+                conditions.add(Map.of("status", status));
+            }
+            if (level != null && !level.isEmpty()) {
+                conditions.add(Map.of("level", level));
+            }
+            if (!conditions.isEmpty()) {
+                if (conditions.size() == 1) {
+                    where.putAll(conditions.get(0));
+                } else {
+                    where.put("$and", conditions);
+                }
+                body.put("where", where);
+            }
+            if (keyword != null && !keyword.isEmpty()) {
+                body.put("where_document", Map.of("$contains", keyword));
+            }
 
-            List<Object> ids = (List<Object>) body.get("ids");
-            List<Object> documents = (List<Object>) body.get("documents");
-            List<Object> metadatas = (List<Object>) body.get("metadatas");
+            var response = restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody == null) return List.of();
+
+            List<Object> ids = (List<Object>) responseBody.get("ids");
+            List<Object> documents = (List<Object>) responseBody.get("documents");
+            List<Object> metadatas = (List<Object>) responseBody.get("metadatas");
 
             List<Map<String, Object>> results = new ArrayList<>();
             if (ids != null) {

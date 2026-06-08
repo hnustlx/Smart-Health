@@ -14,25 +14,32 @@ import java.util.Map;
 @Schema(description = "计划详情（含 AI 生成内容）")
 public class PlanDetailResponse {
 
-    @JsonProperty("id")
+    @JsonProperty("planId")
+    @Schema(description = "计划 ID", example = "1")
     private Long id;
 
     @JsonProperty("planType")
+    @Schema(description = "计划类型: DIET/EXERCISE/COMBINED", example = "COMBINED")
     private String planType;
 
     @JsonProperty("planLevel")
+    @Schema(description = "计划级别: BASIC/VIP", example = "VIP")
     private String planLevel;
 
     @JsonProperty("planContent")
+    @Schema(description = "AI 计划内容")
     private Map<String, Object> planContent;
 
     @JsonProperty("trendSummary")
+    @Schema(description = "体重趋势摘要", example = "体重持续下降，保持当前计划强度。")
     private String trendSummary;
 
     @JsonProperty("references")
+    @Schema(description = "RAG 参考知识列表")
     private List<ReferenceItem> references;
 
     @JsonProperty("createTime")
+    @Schema(description = "创建时间", example = "2026-06-08T20:00:00")
     private LocalDateTime createTime;
 
     @Data

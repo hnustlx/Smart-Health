@@ -68,11 +68,14 @@ class KnowledgeControllerTest {
         metadata.setLevel("all");
         request.setMetadata(metadata);
 
+        when(ragService.addKnowledge(anyString(), anyMap())).thenReturn("knowledge_test_id");
+
         mockMvc.perform(post("/api/v1/admin/knowledge")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.knowledgeId").value("knowledge_test_id"));
     }
 
     @Test
@@ -102,13 +105,33 @@ class KnowledgeControllerTest {
 
     @Test
     void listKnowledge_shouldReturn200() throws Exception {
-        when(ragService.listKnowledge()).thenReturn(List.of(
+        when(ragService.listKnowledge(any(), any(), any(), any())).thenReturn(List.of(
                 Map.of("id", "id1", "document", "知识1", "metadata", Map.of("category", "饮食"))));
 
         mockMvc.perform(get("/api/v1/admin/knowledge/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].id").value("id1"));
+    }
+
+    @Test
+    void listKnowledge_shouldFilterByCategory() throws Exception {
+        when(ragService.listKnowledge(eq("饮食"), any(), any(), any())).thenReturn(List.of(
+                Map.of("id", "id2", "document", "饮食知识", "metadata", Map.of("category", "饮食"))));
+
+        mockMvc.perform(get("/api/v1/admin/knowledge/list?category=饮食"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data[0].id").value("id2"));
+    }
+
+    @Test
+    void listKnowledge_shouldFilterByStatus() throws Exception {
+        when(ragService.listKnowledge(any(), any(), eq("disabled"), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/admin/knowledge/list?status=disabled"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test

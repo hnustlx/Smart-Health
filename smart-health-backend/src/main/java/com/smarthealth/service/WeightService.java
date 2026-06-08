@@ -84,6 +84,14 @@ public class WeightService {
         weightRecordMapper.deleteById(recordId);
     }
 
+    public void deleteWeightAsAdmin(Long recordId) {
+        WeightRecord record = weightRecordMapper.findById(recordId);
+        if (record == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "体重记录不存在");
+        }
+        weightRecordMapper.deleteById(recordId);
+    }
+
     public String analyzeTrend(Long userId) {
         List<WeightRecord> records = weightRecordMapper.findByUserId(userId);
         if (records == null || records.size() < 2) {

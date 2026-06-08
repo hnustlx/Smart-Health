@@ -123,6 +123,14 @@ public class PlanService {
         return toDetailResponse(plan, planContent, List.of());
     }
 
+    public void deletePlan(Long planId) {
+        Plan plan = planMapper.findById(planId);
+        if (plan == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "计划不存在");
+        }
+        planMapper.deleteById(planId);
+    }
+
     public GenerateCountResponse getGenerateCount(Long userId, String role) {
         int limit = "VIP".equals(role) ? VIP_DAILY_LIMIT : USER_DAILY_LIMIT;
         PlanGenerateRecord record = generateRecordMapper.findByUserIdAndDate(userId, LocalDate.now());

@@ -26,9 +26,11 @@ public class ChatResponse {
     public static class ReferenceItem {
 
         @JsonProperty("title")
+        @Schema(description = "知识标题", example = "减脂期间饮食原则")
         private String title;
 
         @JsonProperty("category")
+        @Schema(description = "知识分类", example = "减脂饮食")
         private String category;
     }
 }

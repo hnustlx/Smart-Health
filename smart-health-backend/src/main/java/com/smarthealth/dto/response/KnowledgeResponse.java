@@ -13,11 +13,14 @@ import java.util.Map;
 public class KnowledgeResponse {
 
     @JsonProperty("id")
+    @Schema(description = "知识 ID", example = "knowledge_fat_loss_001")
     private String id;
 
     @JsonProperty("document")
+    @Schema(description = "知识正文", example = "减脂期间应控制总热量摄入。")
     private String document;
 
     @JsonProperty("metadata")
+    @Schema(description = "知识元数据")
     private Map<String, Object> metadata;
 }

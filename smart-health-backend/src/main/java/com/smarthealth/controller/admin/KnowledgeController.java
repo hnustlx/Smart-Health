@@ -28,8 +28,8 @@ public class KnowledgeController {
     @Operation(summary = "新增健康知识")
     @PostMapping
     public Result<Map<String, String>> createKnowledge(@Valid @RequestBody CreateKnowledgeRequest request) {
-        ragService.addKnowledge(request.getDocument(), request.toMetadataMap());
-        return Result.success("新增成功", Map.of("knowledgeId", ""));
+        String knowledgeId = ragService.addKnowledge(request.getDocument(), request.toMetadataMap());
+        return Result.success("新增成功", Map.of("knowledgeId", knowledgeId));
     }
 
     @Operation(summary = "修改健康知识")
@@ -49,8 +49,12 @@ public class KnowledgeController {
 
     @Operation(summary = "查询健康知识列表")
     @GetMapping("/list")
-    public Result<List<KnowledgeResponse>> listKnowledge() {
-        List<Map<String, Object>> items = ragService.listKnowledge();
+    public Result<List<KnowledgeResponse>> listKnowledge(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String level) {
+        List<Map<String, Object>> items = ragService.listKnowledge(category, keyword, status, level);
         List<KnowledgeResponse> responses = items.stream()
                 .map(m -> new KnowledgeResponse(
                         (String) m.get("id"),

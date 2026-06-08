@@ -13,17 +13,22 @@ import java.time.LocalDateTime;
 public class PlanHistoryResponse {
 
     @JsonProperty("id")
+    @Schema(description = "计划 ID", example = "1")
     private Long id;
 
     @JsonProperty("planType")
+    @Schema(description = "计划类型: DIET/EXERCISE/COMBINED", example = "COMBINED")
     private String planType;
 
     @JsonProperty("planLevel")
+    @Schema(description = "计划级别: BASIC/VIP", example = "BASIC")
     private String planLevel;
 
     @JsonProperty("trendSummary")
+    @Schema(description = "体重趋势摘要", example = "体重持续下降，保持当前计划强度。")
     private String trendSummary;
 
     @JsonProperty("createTime")
+    @Schema(description = "创建时间", example = "2026-06-08T20:00:00")
     private LocalDateTime createTime;
 }

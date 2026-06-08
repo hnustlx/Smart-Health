@@ -4,7 +4,11 @@
 *.swo
 *~
 .DS_Store
+Thumbs.db
 target/
 *.log
 .env
+.env.local
 application-prod.yml
+.vscode/
+docker-compose.override.yml

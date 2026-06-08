@@ -13,4 +13,6 @@ public interface PlanMapper {
     List<Plan> findByUserId(@Param("userId") Long userId);
 
     int insert(Plan plan);
+
+    int deleteById(@Param("id") Long id);
 }

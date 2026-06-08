@@ -24,4 +24,8 @@
         INSERT INTO plan (user_id, plan_type, plan_level, plan_content, trend_summary)
         VALUES (#{userId}, #{planType}, #{planLevel}, #{planContent}, #{trendSummary})
     </insert>
+
+    <delete id="deleteById">
+        DELETE FROM plan WHERE id = #{id}
+    </delete>
 </mapper>
