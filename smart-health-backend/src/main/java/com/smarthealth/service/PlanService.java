@@ -27,6 +27,7 @@ public class PlanService {
     private final ProfileMapper profileMapper;
     private final WeightService weightService;
     private final DeepSeekService deepSeekService;
+    private final RagService ragService;
     private final ObjectMapper objectMapper;
 
     private static final int USER_DAILY_LIMIT = 2;
@@ -41,7 +42,12 @@ public class PlanService {
         }
 
         String trendSummary = weightService.analyzeTrend(userId);
-        String userPrompt = buildUserPrompt(profile, trendSummary);
+
+        List<Map<String, Object>> ragResults = ragService.query(
+                profile.getGoal() + " " + profile.getDietPreference(),
+                5, role);
+
+        String userPrompt = buildUserPrompt(profile, trendSummary, ragResults);
         String systemPrompt = buildSystemPrompt(role);
 
         String aiResponse = deepSeekService.chat(systemPrompt, userPrompt);
@@ -66,7 +72,16 @@ public class PlanService {
 
         incrementGenerateCount(userId);
 
-        return toDetailResponse(plan, planContent, List.of());
+        List<PlanDetailResponse.ReferenceItem> references = ragResults.stream()
+                .map(r -> {
+                    Map<String, Object> meta = (Map<String, Object>) r.get("metadata");
+                    return new PlanDetailResponse.ReferenceItem(
+                            (String) meta.get("title"),
+                            (String) meta.get("category"));
+                })
+                .collect(Collectors.toList());
+
+        return toDetailResponse(plan, planContent, references);
     }
 
     public List<PlanHistoryResponse> getHistory(Long userId) {
@@ -144,14 +159,27 @@ public class PlanService {
         return sb.toString();
     }
 
-    private String buildUserPrompt(HealthProfile profile, String trendSummary) {
-        return String.format("用户信息：\n年龄：%d\n性别：%s\n身高：%.1fcm\n当前体重：%.1fkg\n"
-                        + "活动水平：%s\n饮食偏好：%s\n健康目标：%s\n\n体重趋势：%s\n\n请生成一周健康计划。",
+    private String buildUserPrompt(HealthProfile profile, String trendSummary,
+                                    List<Map<String, Object>> ragResults) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("用户信息：\n年龄：%d\n性别：%s\n身高：%.1fcm\n当前体重：%.1fkg\n"
+                        + "活动水平：%s\n饮食偏好：%s\n健康目标：%s\n\n体重趋势：%s\n\n",
                 profile.getAge(), profile.getGender(),
                 profile.getHeight(), profile.getWeight(),
                 profile.getActivityLevel(),
                 profile.getDietPreference() != null ? profile.getDietPreference() : "无特殊",
-                profile.getGoal(), trendSummary);
+                profile.getGoal(), trendSummary));
+
+        if (ragResults != null && !ragResults.isEmpty()) {
+            sb.append("参考以下健康知识生成计划：\n");
+            for (Map<String, Object> result : ragResults) {
+                sb.append("- ").append(result.get("document")).append("\n");
+            }
+            sb.append("\n");
+        }
+
+        sb.append("请根据以上信息生成一周健康计划。");
+        return sb.toString();
     }
 
     private PlanDetailResponse toDetailResponse(Plan plan, Map<String, Object> planContent,
