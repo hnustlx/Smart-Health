@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class ChatController {
 
     @Operation(summary = "VIP 智能问答")
     @PostMapping("/ask")
+    @PreAuthorize("hasRole('VIP')")
     public Result<ChatResponse> askQuestion(@AuthenticationPrincipal UserPrincipal principal,
                                              @Valid @RequestBody ChatRequest request) {
         return Result.success(chatService.askQuestion(principal.getRole(), request));

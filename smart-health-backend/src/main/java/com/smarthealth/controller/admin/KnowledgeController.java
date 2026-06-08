@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/admin/knowledge")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class KnowledgeController {
 
     private final RagService ragService;
