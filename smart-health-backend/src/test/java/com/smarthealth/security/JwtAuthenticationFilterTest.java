@@ -1,6 +1,7 @@
 package com.smarthealth.security;
 
-import com.smarthealth.security.UserPrincipal;
+import com.smarthealth.entity.User;
+import com.smarthealth.mapper.UserMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,9 @@ class JwtAuthenticationFilterTest {
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private UserMapper userMapper;
 
     @Mock
     private HttpServletRequest request;
@@ -53,6 +57,11 @@ class JwtAuthenticationFilterTest {
         when(jwtTokenProvider.getUsernameFromToken("valid-token")).thenReturn("testuser");
         when(jwtTokenProvider.getRoleFromToken("valid-token")).thenReturn("USER");
 
+        User user = new User();
+        user.setId(1L);
+        user.setStatus(1);
+        when(userMapper.findById(1L)).thenReturn(user);
+
         filter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -80,6 +89,23 @@ class JwtAuthenticationFilterTest {
     void doFilter_shouldNotSetAuthentication_whenInvalidToken() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer invalid-token");
         when(jwtTokenProvider.validateToken("invalid-token")).thenReturn(false);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void doFilter_shouldNotSetAuthentication_whenUserDisabled() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer valid-token");
+        when(jwtTokenProvider.validateToken("valid-token")).thenReturn(true);
+        when(jwtTokenProvider.getUserIdFromToken("valid-token")).thenReturn(1L);
+
+        User user = new User();
+        user.setId(1L);
+        user.setStatus(0);
+        when(userMapper.findById(1L)).thenReturn(user);
 
         filter.doFilterInternal(request, response, filterChain);
 

@@ -77,6 +77,22 @@ class RagServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void query_shouldFilterForVIP() {
+        Map<String, Object> responseBody = Map.of(
+                "ids", List.of("vip-id"),
+                "documents", List.of("vip document"),
+                "metadatas", List.of(Map.of("level", "vip"))
+        );
+        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        List<Map<String, Object>> results = ragService.query("health", 5, "VIP");
+        assertEquals(1, results.size());
+        assertEquals("vip-id", results.get(0).get("id"));
+    }
+
+    @Test
     void query_shouldReturnEmpty_whenNoResults() {
         Map<String, Object> responseBody = Map.of(
                 "ids", List.of(),

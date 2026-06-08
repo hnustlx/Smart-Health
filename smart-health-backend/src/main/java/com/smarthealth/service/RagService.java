@@ -101,6 +101,8 @@ public class RagService {
         where.put("status", "enabled");
         if ("USER".equals(role)) {
             where.put("$or", List.of(Map.of("level", "basic"), Map.of("level", "all")));
+        } else if ("VIP".equals(role)) {
+            where.put("$or", List.of(Map.of("level", "vip"), Map.of("level", "all")));
         }
         body.put("where", where);
         body.put("where_document", Map.of("$contains", queryText));
