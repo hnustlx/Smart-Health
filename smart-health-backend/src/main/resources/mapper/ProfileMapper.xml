@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smarthealth.mapper.ProfileMapper">
+
+    <resultMap id="profileMap" type="com.smarthealth.entity.HealthProfile">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="age" column="age"/>
+        <result property="gender" column="gender"/>
+        <result property="height" column="height"/>
+        <result property="weight" column="weight"/>
+        <result property="activityLevel" column="activity_level"/>
+        <result property="dietPreference" column="diet_preference"/>
+        <result property="goal" column="goal"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="profileMap">
+        SELECT * FROM health_profile WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO health_profile (user_id, age, gender, height, weight, activity_level, diet_preference, goal)
+        VALUES (#{userId}, #{age}, #{gender}, #{height}, #{weight}, #{activityLevel}, #{dietPreference}, #{goal})
+    </insert>
+
+    <update id="update">
+        UPDATE health_profile
+        SET age = #{age}, gender = #{gender}, height = #{height}, weight = #{weight},
+            activity_level = #{activityLevel}, diet_preference = #{dietPreference}, goal = #{goal}
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

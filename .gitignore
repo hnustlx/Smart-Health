@@ -1,0 +1,10 @@
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+target/
+*.log
+.env
+application-prod.yml

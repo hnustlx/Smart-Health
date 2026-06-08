@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smarthealth.mapper.PlanMapper">
+
+    <resultMap id="planMap" type="com.smarthealth.entity.Plan">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="planType" column="plan_type"/>
+        <result property="planLevel" column="plan_level"/>
+        <result property="planContent" column="plan_content"/>
+        <result property="trendSummary" column="trend_summary"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="findById" resultMap="planMap">
+        SELECT * FROM plan WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="planMap">
+        SELECT * FROM plan WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO plan (user_id, plan_type, plan_level, plan_content, trend_summary)
+        VALUES (#{userId}, #{planType}, #{planLevel}, #{planContent}, #{trendSummary})
+    </insert>
+</mapper>

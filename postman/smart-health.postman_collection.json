@@ -1,0 +1,1134 @@
+{
+	"info": {
+		"name": "Smart-Health API",
+		"description": "智能健康助手后端接口测试集合\n\n使用前请先导入环境变量文件(smart-health.postman_environment.json)\n先执行 User → Register 或 User → Login 获取 Token",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User",
+			"description": "用户注册、登录、当前信息查询",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"response has code and message\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json).to.have.property(\"code\");",
+									"    pm.expect(json).to.have.property(\"message\");",
+									"});",
+									"",
+									"pm.test(\"register success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.message).to.include(\"注册成功\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login (USER)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"",
+									"pm.test(\"login success\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"token\");",
+									"    pm.expect(json.data).to.have.property(\"role\");",
+									"});",
+									"",
+									"if (json.code === 200 && json.data && json.data.token) {",
+									"    pm.environment.set(\"userToken\", json.data.token);",
+									"    pm.environment.set(\"userId\", json.data.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login (VIP)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"",
+									"pm.test(\"login success with VIP role\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data.role).to.eql(\"VIP\");",
+									"});",
+									"",
+									"if (json.code === 200 && json.data && json.data.token) {",
+									"    pm.environment.set(\"vipToken\", json.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"vip_test\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login (ADMIN)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"",
+									"pm.test(\"login success with ADMIN role\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data.role).to.eql(\"ADMIN\");",
+									"});",
+									"",
+									"if (json.code === 200 && json.data && json.data.token) {",
+									"    pm.environment.set(\"adminToken\", json.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return user info\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"userId\");",
+									"    pm.expect(json.data).to.have.property(\"username\");",
+									"    pm.expect(json.data).to.have.property(\"role\");",
+									"    pm.expect(json.data).to.have.property(\"status\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/current",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "current"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"description": "健康档案 CRUD",
+			"item": [
+				{
+					"name": "Create Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"create profile success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.message).to.include(\"保存成功\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"age\": 22,\n  \"gender\": \"男\",\n  \"height\": 175.0,\n  \"weight\": 80.0,\n  \"activityLevel\": \"较低\",\n  \"dietPreference\": \"少油少糖\",\n  \"goal\": \"减脂\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return profile\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"age\");",
+									"    pm.expect(json.data).to.have.property(\"gender\");",
+									"    pm.expect(json.data).to.have.property(\"height\");",
+									"    pm.expect(json.data).to.have.property(\"weight\");",
+									"    pm.expect(json.data).to.have.property(\"goal\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"update success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.message).to.include(\"修改成功\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"age\": 23,\n  \"gender\": \"男\",\n  \"height\": 175.0,\n  \"weight\": 78.0,\n  \"activityLevel\": \"中等\",\n  \"dietPreference\": \"少油少糖\",\n  \"goal\": \"减脂\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Get Profile - Unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"return unauthorized\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Weight",
+			"description": "体重记录 CRUD",
+			"item": [
+				{
+					"name": "Add Weight",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"add weight success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.message).to.include(\"添加成功\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"weight\": 79.5,\n  \"recordDate\": \"2026-06-08\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/weight/add",
+							"host": ["{{baseUrl}}"],
+							"path": ["weight", "add"]
+						}
+					}
+				},
+				{
+					"name": "Get Weight History",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return weight list\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (json.data && json.data.length > 0) {",
+									"    pm.test(\"weight item has correct fields\", function () {",
+									"        const item = json.data[0];",
+									"        pm.expect(item).to.have.property(\"id\");",
+									"        pm.expect(item).to.have.property(\"weight\");",
+									"        pm.expect(item).to.have.property(\"recordDate\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/weight/history",
+							"host": ["{{baseUrl}}"],
+							"path": ["weight", "history"]
+						}
+					}
+				},
+				{
+					"name": "Delete Weight Record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"delete success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/weight/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["weight", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Plan",
+			"description": "AI 计划生成与查询",
+			"item": [
+				{
+					"name": "Generate Plan (USER)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();",
+									"",
+									"if (json.code === 200) {",
+									"    pm.test(\"generate success\", function () {",
+									"        pm.expect(json.data).to.have.property(\"planId\");",
+									"        pm.expect(json.data).to.have.property(\"planLevel\");",
+									"        pm.expect(json.data).to.have.property(\"planType\");",
+									"        pm.expect(json.data).to.have.property(\"planContent\");",
+									"    });",
+									"    pm.environment.set(\"planId\", json.data.planId);",
+									"} else if (json.code === 403) {",
+									"    pm.test(\"generation limit reached\", function () {",
+									"        pm.expect(json.message).to.include(\"次数已用完\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/plan/generate",
+							"host": ["{{baseUrl}}"],
+							"path": ["plan", "generate"]
+						}
+					}
+				},
+				{
+					"name": "Generate Plan (VIP)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();",
+									"",
+									"if (json.code === 200) {",
+									"    pm.test(\"VIP plan contains extra fields\", function () {",
+									"        pm.expect(json.data.planLevel).to.eql(\"VIP\");",
+									"        pm.expect(json.data.planContent).to.have.property(\"vipDetail\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{vipToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/plan/generate",
+							"host": ["{{baseUrl}}"],
+							"path": ["plan", "generate"]
+						}
+					}
+				},
+				{
+					"name": "Get Generate Count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return count info\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"usedCount\");",
+									"    pm.expect(json.data).to.have.property(\"limitCount\");",
+									"    pm.expect(json.data).to.have.property(\"remainingCount\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/plan/generate-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["plan", "generate-count"]
+						}
+					}
+				},
+				{
+					"name": "Get Plan History",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return plan list\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.be.an(\"array\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/plan/history",
+							"host": ["{{baseUrl}}"],
+							"path": ["plan", "history"]
+						}
+					}
+				},
+				{
+					"name": "Get Plan Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();",
+									"",
+									"if (json.code === 200) {",
+									"    pm.test(\"return plan detail\", function () {",
+									"        pm.expect(json.data).to.have.property(\"id\");",
+									"        pm.expect(json.data).to.have.property(\"planContent\");",
+									"        pm.expect(json.data).to.have.property(\"createTime\");",
+									"    });",
+									"} else if (json.code === 404) {",
+									"    pm.test(\"plan not found\", function () {",
+									"        pm.expect(json.message).to.include(\"不存在\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/plan/{{planId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["plan", "{{planId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"description": "VIP 智能健康问答",
+			"item": [
+				{
+					"name": "Ask Question (VIP)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();",
+									"",
+									"if (json.code === 200) {",
+									"    pm.test(\"return answer with references\", function () {",
+									"        pm.expect(json.data).to.have.property(\"answer\");",
+									"        pm.expect(json.data).to.have.property(\"references\");",
+									"        pm.expect(json.data.answer).to.include(\"仅供健康管理参考\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{vipToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"减脂期间晚餐怎么吃？\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/ask",
+							"host": ["{{baseUrl}}"],
+							"path": ["chat", "ask"]
+						}
+					}
+				},
+				{
+					"name": "Ask Question (USER - Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"user cannot access chat\", function () {",
+									"    pm.expect(json.code).to.eql(403);",
+									"    pm.expect(json.message).to.include(\"VIP\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"减脂期间晚餐怎么吃？\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat/ask",
+							"host": ["{{baseUrl}}"],
+							"path": ["chat", "ask"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin User",
+			"description": "管理员用户管理",
+			"item": [
+				{
+					"name": "List Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return user list\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"total\");",
+									"    pm.expect(json.data).to.have.property(\"records\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users"]
+						}
+					}
+				},
+				{
+					"name": "Get User Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return user detail\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.have.property(\"username\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "1"]
+						}
+					}
+				},
+				{
+					"name": "Disable User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"disable success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/1/disable",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "1", "disable"]
+						}
+					}
+				},
+				{
+					"name": "Enable User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"enable success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/1/enable",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users", "1", "enable"]
+						}
+					}
+				},
+				{
+					"name": "Admin Access - USER Token (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"user cannot access admin\", function () {",
+									"    pm.expect(json.code).to.eql(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{userToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Knowledge",
+			"description": "健康知识库管理（管理员）",
+			"item": [
+				{
+					"name": "Create Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"if (json.code === 200) {",
+									"    pm.test(\"create success with knowledgeId\", function () {",
+									"        pm.expect(json.data).to.have.property(\"knowledgeId\");",
+									"    });",
+									"    pm.environment.set(\"knowledgeId\", json.data.knowledgeId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document\": \"减脂期间应控制总热量摄入，增加优质蛋白，减少高糖、高油、高热量食物。\",\n  \"metadata\": {\n    \"category\": \"减脂饮食\",\n    \"title\": \"减脂期间饮食原则\",\n    \"keywords\": \"减脂,热量,蛋白质\",\n    \"status\": \"enabled\",\n    \"level\": \"all\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge"]
+						}
+					}
+				},
+				{
+					"name": "List Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.test(\"return knowledge list\", function () {",
+									"    pm.expect(json.code).to.eql(200);",
+									"    pm.expect(json.data).to.be.an(\"array\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge/list",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge", "list"]
+						}
+					}
+				},
+				{
+					"name": "Update Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"update success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document\": \"减脂期间应控制总热量摄入，增加优质蛋白和膳食纤维。\",\n  \"metadata\": {\n    \"category\": \"减脂饮食\",\n    \"title\": \"减脂期间饮食原则\",\n    \"keywords\": \"减脂,热量,蛋白质,纤维\",\n    \"status\": \"enabled\",\n    \"level\": \"all\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge/{{knowledgeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge", "{{knowledgeId}}"]
+						}
+					}
+				},
+				{
+					"name": "Disable Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"disable success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge/{{knowledgeId}}/disable",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge", "{{knowledgeId}}", "disable"]
+						}
+					}
+				},
+				{
+					"name": "Enable Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"enable success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge/{{knowledgeId}}/enable",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge", "{{knowledgeId}}", "enable"]
+						}
+					}
+				},
+				{
+					"name": "Delete Knowledge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"delete success\", function () {",
+									"    const json = pm.response.json();",
+									"    pm.expect(json.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/knowledge/{{knowledgeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "knowledge", "{{knowledgeId}}"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
