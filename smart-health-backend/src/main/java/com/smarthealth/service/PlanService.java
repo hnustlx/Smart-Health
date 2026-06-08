@@ -80,6 +80,9 @@ public class PlanService {
         plan.setPlanContent(aiResponse);
         plan.setTrendSummary(trendSummary);
         planMapper.insert(plan);
+        if (plan.getCreateTime() == null) {
+            plan.setCreateTime(LocalDateTime.now());
+        }
 
         incrementGenerateCount(userId);
 
@@ -163,19 +166,44 @@ public class PlanService {
     private String buildSystemPrompt(String role) {
         boolean isVip = "VIP".equals(role);
         StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的健康管理助手。请根据用户信息生成一周饮食和运动计划。");
-        sb.append("必须以 JSON 格式返回，包含以下字段：");
-        sb.append("\"dietPlan\": 包含每日早餐、午餐、晚餐、加餐建议的数组；");
-        sb.append("\"exercisePlan\": 包含每日运动类型、时长、频率、强度的数组。");
+        sb.append("你是一个专业的健康管理助手。只返回 JSON，不要返回 Markdown 或其他格式。\n\n");
+
+        sb.append("一、dietPlan 必须包含周一到周日 7 天，每天包含：\n");
+        sb.append("- day: 周一至周日\n");
+        sb.append("- breakfast: 早餐建议\n");
+        sb.append("- lunch: 午餐建议\n");
+        sb.append("- dinner: 晚餐建议\n");
+        sb.append("- snack: 加餐建议\n");
+        sb.append("- calorie: {\n");
+        sb.append("    target: 建议摄入区间（如 \"1650-1750 kcal\"）\n");
+        sb.append("    advice: 摄入建议\n");
         if (isVip) {
-            sb.append("额外返回 \"vipDetail\" 字段，包含：");
-            sb.append("\"calorieEstimate\"（每餐热量估算）、");
-            sb.append("\"nutritionRatio\"（蛋白质/碳水/脂肪比例建议）、");
-            sb.append("\"exerciseIntensity\"（训练强度分级）、");
-            sb.append("\"weeklyReview\"（每周复盘建议）。");
+            sb.append("    total: 当天总热量（如 \"约 1680 kcal\"）\n");
+            sb.append("    foods: [{name: 食物名, kcal: 热量}]  // 每种食物具体热量\n");
         }
-        sb.append("You must respond in valid JSON format. ");
-        sb.append("返回内容仅供健康管理参考，不能替代专业医疗建议。");
+        sb.append("  }\n\n");
+
+        sb.append("二、exercisePlan 必须包含周一到周日 7 天，每天包含：\n");
+        sb.append("- day: 周一至周日\n");
+        sb.append("- type: 运动类型\n");
+        sb.append("- duration: 运动时长\n");
+        sb.append("- intensity: 运动强度\n");
+        sb.append("- items: [{name: 项目名（如热身/主项目/收尾）, detail: 具体动作描述}]\n");
+        sb.append("- note: 注意事项\n\n");
+
+        if (isVip) {
+            sb.append("三、额外返回 vipDetail 字段，包含以下全部字段：\n");
+            sb.append("- calorieEstimate: 每日热量目标\n");
+            sb.append("- nutritionRatio: 宏量营养比例\n");
+            sb.append("- mealStrategy: 餐盘结构建议\n");
+            sb.append("- trainingFocus: 本周训练重点\n");
+            sb.append("- recoveryPlan: 训练恢复建议\n");
+            sb.append("- hydrationTarget: 每日饮水目标\n");
+            sb.append("- riskReminder: 风险提醒\n");
+            sb.append("- weeklyReview: 每周复盘建议\n\n");
+        }
+
+        sb.append("所有健康建议仅作为健康管理参考，不能替代专业医疗建议。");
         return sb.toString();
     }
 
@@ -198,7 +226,7 @@ public class PlanService {
             sb.append("\n");
         }
 
-        sb.append("请根据以上信息生成一周健康计划。");
+        sb.append("请根据以上信息生成一周健康计划。请完整输出周一到周日共 7 天数据。");
         return sb.toString();
     }
 

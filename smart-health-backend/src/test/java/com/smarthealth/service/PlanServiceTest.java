@@ -111,9 +111,9 @@ class PlanServiceTest {
 
         GenerateCountResponse count = planService.getGenerateCount(1L, "USER");
 
-        assertEquals(0, count.getUsedCount());
-        assertEquals(2, count.getLimitCount());
-        assertEquals(2, count.getRemainingCount());
+        assertEquals(0, count.getUsed());
+        assertEquals(2, count.getLimit());
+        assertEquals(2, count.getRemaining());
     }
 
     @Test
@@ -125,9 +125,9 @@ class PlanServiceTest {
 
         GenerateCountResponse count = planService.getGenerateCount(1L, "VIP");
 
-        assertEquals(3, count.getUsedCount());
-        assertEquals(5, count.getLimitCount());
-        assertEquals(2, count.getRemainingCount());
+        assertEquals(3, count.getUsed());
+        assertEquals(5, count.getLimit());
+        assertEquals(2, count.getRemaining());
     }
 
     @Test

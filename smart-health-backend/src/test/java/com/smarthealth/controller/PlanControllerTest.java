@@ -96,6 +96,6 @@ class PlanControllerTest {
         mockMvc.perform(get("/api/v1/plan/generate-count"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data.remainingCount").value(1));
+                .andExpect(jsonPath("$.data.remaining").value(1));
     }
 }

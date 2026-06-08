@@ -11,15 +11,15 @@ import lombok.Data;
 @Schema(description = "今日生成次数响应")
 public class GenerateCountResponse {
 
-    @JsonProperty("usedCount")
+    @JsonProperty("used")
     @Schema(description = "今日已用次数", example = "1")
-    private Integer usedCount;
+    private Integer used;
 
-    @JsonProperty("limitCount")
+    @JsonProperty("limit")
     @Schema(description = "今日限制次数", example = "2")
-    private Integer limitCount;
+    private Integer limit;
 
-    @JsonProperty("remainingCount")
+    @JsonProperty("remaining")
     @Schema(description = "今日剩余次数", example = "1")
-    private Integer remainingCount;
+    private Integer remaining;
 }
