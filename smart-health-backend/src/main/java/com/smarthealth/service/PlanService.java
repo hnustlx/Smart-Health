@@ -174,6 +174,7 @@ public class PlanService {
             sb.append("\"exerciseIntensity\"（训练强度分级）、");
             sb.append("\"weeklyReview\"（每周复盘建议）。");
         }
+        sb.append("You must respond in valid JSON format. ");
         sb.append("返回内容仅供健康管理参考，不能替代专业医疗建议。");
         return sb.toString();
     }

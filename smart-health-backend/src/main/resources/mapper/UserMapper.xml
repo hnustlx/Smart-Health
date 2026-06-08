@@ -53,4 +53,8 @@
     <update id="updateStatus">
         UPDATE user SET status = #{status} WHERE id = #{id}
     </update>
+
+    <update id="updateRoleAndVipExpire">
+        UPDATE user SET role = #{role}, vip_expire_time = #{vipExpireTime} WHERE id = #{id}
+    </update>
 </mapper>

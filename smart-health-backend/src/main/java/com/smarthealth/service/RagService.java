@@ -96,7 +96,6 @@ public class RagService {
     }
 
     public List<Map<String, Object>> query(String queryText, int nResults, String role) {
-        String url = chromaConfig.getUrl() + dataPath() + "/get";
         Map<String, Object> body = new HashMap<>();
         Map<String, Object> where = new HashMap<>();
         where.put("status", "enabled");
@@ -107,29 +106,7 @@ public class RagService {
         body.put("where_document", Map.of("$contains", queryText));
         body.put("limit", nResults);
 
-        try {
-            var response = restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
-            Map<String, Object> responseBody = response.getBody();
-            if (responseBody == null) return List.of();
-
-            List<Object> documents = (List<Object>) responseBody.get("documents");
-            List<Object> metadatas = (List<Object>) responseBody.get("metadatas");
-            List<Object> ids = (List<Object>) responseBody.get("ids");
-
-            List<Map<String, Object>> results = new ArrayList<>();
-            if (ids != null) {
-                for (int i = 0; i < ids.size(); i++) {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("id", ids.get(i));
-                    if (documents != null && i < documents.size()) item.put("document", documents.get(i));
-                    if (metadatas != null && i < metadatas.size()) item.put("metadata", metadatas.get(i));
-                    results.add(item);
-                }
-            }
-            return results;
-        } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 检索失败: " + e.getMessage());
-        }
+        return chromaGet(body, "Chroma 检索失败");
     }
 
     public void ensureCollectionExists() {
@@ -160,32 +137,37 @@ public class RagService {
     }
 
     public List<Map<String, Object>> listKnowledge(String category, String keyword, String status, String level) {
+        Map<String, Object> body = new HashMap<>();
+        Map<String, Object> where = new HashMap<>();
+        List<Map<String, Object>> conditions = new ArrayList<>();
+        if (category != null && !category.isEmpty()) {
+            conditions.add(Map.of("category", category));
+        }
+        if (status != null && !status.isEmpty()) {
+            conditions.add(Map.of("status", status));
+        }
+        if (level != null && !level.isEmpty()) {
+            conditions.add(Map.of("level", level));
+        }
+        if (!conditions.isEmpty()) {
+            if (conditions.size() == 1) {
+                where.putAll(conditions.get(0));
+            } else {
+                where.put("$and", conditions);
+            }
+            body.put("where", where);
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            body.put("where_document", Map.of("$contains", keyword));
+        }
+
+        return chromaGet(body, "Chroma 查询失败");
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> chromaGet(Map<String, Object> body, String errorMessage) {
         String url = chromaConfig.getUrl() + dataPath() + "/get";
         try {
-            Map<String, Object> body = new HashMap<>();
-            Map<String, Object> where = new HashMap<>();
-            List<Map<String, Object>> conditions = new ArrayList<>();
-            if (category != null && !category.isEmpty()) {
-                conditions.add(Map.of("category", category));
-            }
-            if (status != null && !status.isEmpty()) {
-                conditions.add(Map.of("status", status));
-            }
-            if (level != null && !level.isEmpty()) {
-                conditions.add(Map.of("level", level));
-            }
-            if (!conditions.isEmpty()) {
-                if (conditions.size() == 1) {
-                    where.putAll(conditions.get(0));
-                } else {
-                    where.put("$and", conditions);
-                }
-                body.put("where", where);
-            }
-            if (keyword != null && !keyword.isEmpty()) {
-                body.put("where_document", Map.of("$contains", keyword));
-            }
-
             var response = restTemplate.postForEntity(url, new HttpEntity<>(body, jsonHeaders()), Map.class);
             Map<String, Object> responseBody = response.getBody();
             if (responseBody == null) return List.of();
@@ -206,7 +188,7 @@ public class RagService {
             }
             return results;
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 查询失败: " + e.getMessage());
+            throw new BusinessException(ResultCode.CHROMA_ERROR, errorMessage + ": " + e.getMessage());
         }
     }
 

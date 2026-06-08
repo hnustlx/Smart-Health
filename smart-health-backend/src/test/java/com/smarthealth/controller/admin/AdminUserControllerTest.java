@@ -182,4 +182,16 @@ class AdminUserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
     }
+
+    @Test
+    void shouldReturn403_whenUserRole() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        new UserPrincipal(2L, "normaluser", "USER"), null,
+                        List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+
+        mockMvc.perform(get("/api/v1/admin/users"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(403));
+    }
 }

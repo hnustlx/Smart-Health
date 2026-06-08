@@ -14,7 +14,7 @@ import java.util.Map;
 @Schema(description = "计划详情（含 AI 生成内容）")
 public class PlanDetailResponse {
 
-    @JsonProperty("planId")
+    @JsonProperty("id")
     @Schema(description = "计划 ID", example = "1")
     private Long id;
 

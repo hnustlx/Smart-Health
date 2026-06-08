@@ -131,6 +131,23 @@ class PlanServiceTest {
     }
 
     @Test
+    void deletePlan_shouldSucceed() {
+        plan.setId(1L);
+        when(planMapper.findById(1L)).thenReturn(plan);
+
+        planService.deletePlan(1L);
+
+        verify(planMapper).deleteById(1L);
+    }
+
+    @Test
+    void deletePlan_shouldThrow_whenNotFound() {
+        when(planMapper.findById(99L)).thenReturn(null);
+
+        assertThrows(BusinessException.class, () -> planService.deletePlan(99L));
+    }
+
+    @Test
     void generatePlan_shouldFallback_whenChromaUnavailable() throws Exception {
         when(profileMapper.findByUserId(1L)).thenReturn(profile);
         when(weightService.analyzeTrend(1L)).thenReturn("体重无明显变化");

@@ -8,6 +8,7 @@ import com.smarthealth.dto.response.LoginResponse;
 import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.service.UserService;
+import com.smarthealth.service.VipCodeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,6 +40,9 @@ class UserControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private VipCodeService vipCodeService;
 
     @Test
     void register_shouldReturn200() throws Exception {

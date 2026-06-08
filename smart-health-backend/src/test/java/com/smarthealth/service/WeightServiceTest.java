@@ -136,4 +136,20 @@ class WeightServiceTest {
 
         assertTrue(trend.getDates().size() <= 2);
     }
+
+    @Test
+    void deleteWeightAsAdmin_shouldSucceed() {
+        when(weightRecordMapper.findById(1L)).thenReturn(record1);
+
+        weightService.deleteWeightAsAdmin(1L);
+
+        verify(weightRecordMapper).deleteById(1L);
+    }
+
+    @Test
+    void deleteWeightAsAdmin_shouldThrow_whenNotFound() {
+        when(weightRecordMapper.findById(99L)).thenReturn(null);
+
+        assertThrows(BusinessException.class, () -> weightService.deleteWeightAsAdmin(99L));
+    }
 }

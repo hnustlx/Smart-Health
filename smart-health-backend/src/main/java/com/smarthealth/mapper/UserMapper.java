@@ -21,4 +21,7 @@ public interface UserMapper {
     int insert(User user);
 
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    int updateRoleAndVipExpire(@Param("id") Long id, @Param("role") String role,
+                               @Param("vipExpireTime") java.time.LocalDateTime vipExpireTime);
 }
