@@ -37,7 +37,7 @@ deepseek:
   url: https://api.deepseek.com/v1/chat/completions
 
 chroma:
-  url: http://localhost:8000
+  url: ${CHROMA_URL:http://localhost:8000}
   collection-name: smart_health_knowledge
 
 springdoc:

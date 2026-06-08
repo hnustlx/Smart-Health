@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: smart-health-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-88888888}
+      MYSQL_DATABASE: smart_health
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smart-health-net
+
+  chroma:
+    image: chromadb/chroma:0.5.18
+    container_name: smart-health-chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smart-health-net
+
+  backend:
+    build:
+      context: ./smart-health-backend
+      dockerfile: Dockerfile
+    container_name: smart-health-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-88888888}
+      JWT_SECRET: ${JWT_SECRET:-SmartHealth2026SecretKeyForJWTTokenGenerationMustBe256BitsLong!!}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      chroma:
+        condition: service_healthy
+    networks:
+      - smart-health-net
+
+volumes:
+  mysql_data:
+  chroma_data:
+
+networks:
+  smart-health-net:
+    driver: bridge

@@ -99,6 +99,32 @@ public class RagService {
         }
     }
 
+    public void ensureCollectionExists() {
+        String checkUrl = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName();
+        try {
+            restTemplate.getForEntity(checkUrl, Map.class);
+        } catch (Exception e) {
+            String createUrl = chromaConfig.getUrl() + "/api/v1/collections";
+            Map<String, Object> body = new HashMap<>();
+            body.put("name", chromaConfig.getCollectionName());
+            try {
+                restTemplate.postForEntity(createUrl, new HttpEntity<>(body, jsonHeaders()), Map.class);
+            } catch (Exception ex) {
+                throw new BusinessException(ResultCode.CHROMA_ERROR, "Chroma 集合创建失败: " + ex.getMessage());
+            }
+        }
+    }
+
+    public long count() {
+        String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/count";
+        try {
+            var response = restTemplate.getForEntity(url, Long.class);
+            return response.getBody() != null ? response.getBody() : 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public List<Map<String, Object>> listKnowledge() {
         String url = chromaConfig.getUrl() + "/api/v1/collections/" + chromaConfig.getCollectionName() + "/get";
         try {
