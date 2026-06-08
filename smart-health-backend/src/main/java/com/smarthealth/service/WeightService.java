@@ -5,10 +5,15 @@ import com.smarthealth.common.BusinessException;
 import com.smarthealth.common.ResultCode;
 import com.smarthealth.dto.request.AddWeightRequest;
 import com.smarthealth.dto.response.WeightRecordResponse;
+import com.smarthealth.dto.response.WeightTrendResponse;
 import com.smarthealth.entity.WeightRecord;
 import com.smarthealth.mapper.WeightRecordMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +35,42 @@ public class WeightService {
         return weightRecordMapper.findByUserId(userId).stream()
                 .map(r -> new WeightRecordResponse(r.getId(), r.getWeight(), r.getRecordDate()))
                 .collect(Collectors.toList());
+    }
+
+    public WeightTrendResponse getTrend(Long userId, String period) {
+        List<WeightRecord> allRecords = weightRecordMapper.findByUserId(userId);
+        if (allRecords == null || allRecords.isEmpty()) {
+            return new WeightTrendResponse(List.of(), List.of());
+        }
+
+        LocalDate startDate;
+        LocalDate now = LocalDate.now();
+        switch (period) {
+            case "week":
+                startDate = now.minusDays(7);
+                break;
+            case "month":
+                startDate = now.minusMonths(1);
+                break;
+            case "year":
+                startDate = now.minusYears(1);
+                break;
+            default:
+                startDate = now.minusDays(7);
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM-dd");
+        List<String> dates = new ArrayList<>();
+        List<BigDecimal> values = new ArrayList<>();
+
+        for (WeightRecord record : allRecords) {
+            if (!record.getRecordDate().isBefore(startDate)) {
+                dates.add(record.getRecordDate().format(fmt));
+                values.add(record.getWeight());
+            }
+        }
+
+        return new WeightTrendResponse(dates, values);
     }
 
     public void deleteWeight(Long userId, Long recordId) {

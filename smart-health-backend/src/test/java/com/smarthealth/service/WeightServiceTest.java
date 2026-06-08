@@ -4,6 +4,7 @@ package com.smarthealth.service;
 import com.smarthealth.common.BusinessException;
 import com.smarthealth.dto.request.AddWeightRequest;
 import com.smarthealth.dto.response.WeightRecordResponse;
+import com.smarthealth.dto.response.WeightTrendResponse;
 import com.smarthealth.entity.WeightRecord;
 import com.smarthealth.mapper.WeightRecordMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,5 +103,37 @@ class WeightServiceTest {
         String trend = weightService.analyzeTrend(1L);
 
         assertTrue(trend.contains("暂无"));
+    }
+
+    @Test
+    void getTrend_shouldReturnWeekData() {
+        WeightRecord recent = new WeightRecord();
+        recent.setWeight(BigDecimal.valueOf(78.0));
+        recent.setRecordDate(LocalDate.now());
+        when(weightRecordMapper.findByUserId(1L)).thenReturn(List.of(record1, record2, recent));
+
+        WeightTrendResponse trend = weightService.getTrend(1L, "week");
+
+        assertFalse(trend.getDates().isEmpty());
+        assertEquals(trend.getDates().size(), trend.getValues().size());
+    }
+
+    @Test
+    void getTrend_shouldReturnEmpty_whenNoRecords() {
+        when(weightRecordMapper.findByUserId(1L)).thenReturn(List.of());
+
+        WeightTrendResponse trend = weightService.getTrend(1L, "week");
+
+        assertTrue(trend.getDates().isEmpty());
+        assertTrue(trend.getValues().isEmpty());
+    }
+
+    @Test
+    void getTrend_shouldSupportMonthPeriod() {
+        when(weightRecordMapper.findByUserId(1L)).thenReturn(List.of(record1, record2));
+
+        WeightTrendResponse trend = weightService.getTrend(1L, "month");
+
+        assertTrue(trend.getDates().size() <= 2);
     }
 }

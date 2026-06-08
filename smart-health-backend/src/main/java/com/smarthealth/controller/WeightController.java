@@ -4,6 +4,7 @@ package com.smarthealth.controller;
 import com.smarthealth.common.Result;
 import com.smarthealth.dto.request.AddWeightRequest;
 import com.smarthealth.dto.response.WeightRecordResponse;
+import com.smarthealth.dto.response.WeightTrendResponse;
 import com.smarthealth.security.UserPrincipal;
 import com.smarthealth.service.WeightService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,13 @@ public class WeightController {
     @GetMapping("/history")
     public Result<List<WeightRecordResponse>> getHistory(@AuthenticationPrincipal UserPrincipal principal) {
         return Result.success(weightService.getHistory(principal.getUserId()));
+    }
+
+    @Operation(summary = "体重趋势（周/月/年）")
+    @GetMapping("/trend")
+    public Result<WeightTrendResponse> getTrend(@AuthenticationPrincipal UserPrincipal principal,
+                                                 @RequestParam(defaultValue = "week") String period) {
+        return Result.success(weightService.getTrend(principal.getUserId(), period));
     }
 
     @Operation(summary = "删除体重记录")

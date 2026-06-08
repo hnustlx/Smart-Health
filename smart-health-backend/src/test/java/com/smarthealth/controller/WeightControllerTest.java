@@ -4,6 +4,7 @@ package com.smarthealth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarthealth.dto.request.AddWeightRequest;
 import com.smarthealth.dto.response.WeightRecordResponse;
+import com.smarthealth.dto.response.WeightTrendResponse;
 import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.security.UserPrincipal;
@@ -84,6 +85,30 @@ class WeightControllerTest {
     @Test
     void deleteWeight_shouldReturn200() throws Exception {
         mockMvc.perform(delete("/api/v1/weight/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    void getTrend_shouldReturn200_withDefaultWeek() throws Exception {
+        when(weightService.getTrend(1L, "week"))
+                .thenReturn(new WeightTrendResponse(
+                        List.of("06-01", "06-08"),
+                        List.of(BigDecimal.valueOf(80.0), BigDecimal.valueOf(79.5))));
+
+        mockMvc.perform(get("/api/v1/weight/trend"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.dates[0]").value("06-01"))
+                .andExpect(jsonPath("$.data.values[0]").value(80.0));
+    }
+
+    @Test
+    void getTrend_shouldReturn200_withMonthParam() throws Exception {
+        when(weightService.getTrend(1L, "month"))
+                .thenReturn(new WeightTrendResponse(List.of(), List.of()));
+
+        mockMvc.perform(get("/api/v1/weight/trend?period=month"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
     }
