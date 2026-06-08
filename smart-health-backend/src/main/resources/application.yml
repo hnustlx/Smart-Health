@@ -8,8 +8,8 @@ spring:
     active: dev
   datasource:
     url: jdbc:mysql://localhost:3306/smart_health?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
-    username: root
-    password: 88888888
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:88888888}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -28,7 +28,7 @@ mybatis:
     map-underscore-to-camel-case: true
 
 jwt:
-  secret: SmartHealth2026SecretKeyForJWTTokenGenerationMustBe256BitsLong!!
+  secret: ${JWT_SECRET:SmartHealth2026SecretKeyForJWTTokenGenerationMustBe256BitsLong!!}
   expiration: 86400000
 
 deepseek:

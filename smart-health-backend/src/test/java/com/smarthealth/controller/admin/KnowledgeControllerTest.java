@@ -3,6 +3,7 @@ package com.smarthealth.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarthealth.dto.request.CreateKnowledgeRequest;
+import com.smarthealth.config.SecurityConfig;
 import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.security.UserPrincipal;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = KnowledgeController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(SecurityConfig.class)
 class KnowledgeControllerTest {
 
     @Autowired

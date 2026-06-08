@@ -4,18 +4,19 @@ package com.smarthealth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smarthealth.common.BusinessException;
 import com.smarthealth.common.ResultCode;
+import com.smarthealth.config.SecurityConfig;
 import com.smarthealth.dto.request.ChatRequest;
 import com.smarthealth.dto.response.ChatResponse;
 import com.smarthealth.security.JwtAuthenticationFilter;
 import com.smarthealth.security.JwtTokenProvider;
 import com.smarthealth.security.UserPrincipal;
 import com.smarthealth.service.ChatService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = ChatController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(SecurityConfig.class)
 class ChatControllerTest {
 
     @Autowired
