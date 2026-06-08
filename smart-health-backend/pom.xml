@@ -15,7 +15,7 @@
     <artifactId>smart-health-backend</artifactId>
     <version>1.0.0</version>
     <name>smart-health-backend</name>
-    <description>Smart Health Backend - AI Diet & Exercise Planning System</description>
+    <description>Smart Health Backend - AI Diet &amp; Exercise Planning System</description>
 
     <properties>
         <java.version>17</java.version>
