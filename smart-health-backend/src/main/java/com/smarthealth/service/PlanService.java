@@ -11,6 +11,8 @@ import com.smarthealth.mapper.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ public class PlanService {
     private final RagService ragService;
     private final ObjectMapper objectMapper;
 
+    private static final Logger log = LoggerFactory.getLogger(PlanService.class);
     private static final int USER_DAILY_LIMIT = 2;
     private static final int VIP_DAILY_LIMIT = 5;
 
@@ -45,9 +48,15 @@ public class PlanService {
 
         String trendSummary = weightService.analyzeTrend(userId);
 
-        List<Map<String, Object>> ragResults = ragService.query(
-                profile.getGoal() + " " + profile.getDietPreference(),
-                5, role);
+        List<Map<String, Object>> ragResults;
+        try {
+            ragResults = ragService.query(
+                    profile.getGoal() + " " + profile.getDietPreference(),
+                    5, role);
+        } catch (Exception e) {
+            log.warn("Chroma unavailable, falling back to AI-only generation", e);
+            ragResults = List.of();
+        }
 
         String userPrompt = buildUserPrompt(profile, trendSummary, ragResults);
         String systemPrompt = buildSystemPrompt(role);

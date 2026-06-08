@@ -6,6 +6,8 @@ import com.smarthealth.common.ResultCode;
 import com.smarthealth.dto.request.ChatRequest;
 import com.smarthealth.dto.response.ChatResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatService {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
+
     private final RagService ragService;
     private final DeepSeekService deepSeekService;
 
@@ -24,7 +28,13 @@ public class ChatService {
             throw new BusinessException(ResultCode.FORBIDDEN, "智能健康问答为 VIP 专属功能");
         }
 
-        List<Map<String, Object>> ragResults = ragService.query(request.getQuestion(), 5, "VIP");
+        List<Map<String, Object>> ragResults;
+        try {
+            ragResults = ragService.query(request.getQuestion(), 5, "VIP");
+        } catch (Exception e) {
+            log.warn("Chroma unavailable, falling back to AI-only Q&A", e);
+            ragResults = List.of();
+        }
 
         String context = "";
         if (ragResults != null && !ragResults.isEmpty()) {

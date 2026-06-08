@@ -73,4 +73,18 @@ class ChatServiceTest {
         assertTrue(response.getAnswer().contains("合理饮食"));
         assertTrue(response.getReferences().isEmpty());
     }
+
+    @Test
+    void askQuestion_shouldFallback_whenChromaUnavailable() {
+        when(ragService.query(anyString(), anyInt(), eq("VIP")))
+                .thenThrow(new RuntimeException("Chroma connection refused"));
+        when(deepSeekService.chat(anyString(), anyString())).thenReturn("无RAG时的回答");
+
+        ChatResponse response = chatService.askQuestion("VIP", request);
+
+        assertNotNull(response);
+        assertTrue(response.getAnswer().contains("无RAG时的回答"));
+        assertTrue(response.getReferences().isEmpty());
+        verify(ragService).query(anyString(), anyInt(), eq("VIP"));
+    }
 }

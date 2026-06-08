@@ -3,9 +3,11 @@ package com.smarthealth.service;
 
 import com.smarthealth.common.BusinessException;
 import com.smarthealth.dto.response.GenerateCountResponse;
+import com.smarthealth.dto.response.PlanDetailResponse;
 import com.smarthealth.dto.response.PlanHistoryResponse;
 import com.smarthealth.entity.*;
 import com.smarthealth.mapper.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -125,5 +128,26 @@ class PlanServiceTest {
         assertEquals(3, count.getUsedCount());
         assertEquals(5, count.getLimitCount());
         assertEquals(2, count.getRemainingCount());
+    }
+
+    @Test
+    void generatePlan_shouldFallback_whenChromaUnavailable() throws Exception {
+        when(profileMapper.findByUserId(1L)).thenReturn(profile);
+        when(weightService.analyzeTrend(1L)).thenReturn("体重无明显变化");
+        when(ragService.query(anyString(), anyInt(), anyString()))
+                .thenThrow(new RuntimeException("Chroma connection refused"));
+        when(deepSeekService.chat(anyString(), anyString()))
+                .thenReturn("{\"dietPlan\":[{\"day\":1,\"breakfast\":\"燕麦粥\"}]"
+                        + ",\"exercisePlan\":[{\"day\":1,\"type\":\"跑步\"}]}");
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(Map.of("dietPlan", List.of(Map.of("day", 1, "breakfast", "燕麦粥"))));
+        when(generateRecordMapper.findByUserIdAndDate(eq(1L), any(LocalDate.class)))
+                .thenReturn(null);
+
+        PlanDetailResponse response = planService.generatePlan(1L, "USER");
+
+        assertNotNull(response);
+        assertNotNull(response.getPlanContent());
+        verify(ragService).query(anyString(), anyInt(), anyString());
     }
 }
