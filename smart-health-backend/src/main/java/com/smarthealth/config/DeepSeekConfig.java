@@ -23,6 +23,7 @@ public class DeepSeekConfig {
     public RestTemplate deepSeekRestTemplate() {
         java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(30))
+                .version(java.net.http.HttpClient.Version.HTTP_1_1)
                 .build();
         return new RestTemplate(new JdkClientHttpRequestFactory(httpClient));
     }
