@@ -40,7 +40,7 @@ deepseek:
   url: https://api.deepseek.com/v1/chat/completions
 
 ollama:
-  url: http://localhost:11434
+  url: ${OLLAMA_BASE_URL:http://localhost:11434}
   model: qwen3.5:9b
 
 chroma:
