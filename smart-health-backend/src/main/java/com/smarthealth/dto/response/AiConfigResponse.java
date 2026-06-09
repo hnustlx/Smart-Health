@@ -15,6 +15,10 @@ public class AiConfigResponse {
     @Schema(description = "AI 提供方", example = "CUSTOM")
     private String provider;
 
+    @JsonProperty("customProvider")
+    @Schema(description = "自定义 AI 厂商", example = "deepseek")
+    private String customProvider;
+
     @JsonProperty("apiKey")
     @Schema(description = "API Key（已脱敏）", example = "sk-****abcd")
     private String apiKey;

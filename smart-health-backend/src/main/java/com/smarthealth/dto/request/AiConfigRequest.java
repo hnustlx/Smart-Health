@@ -14,6 +14,10 @@ public class AiConfigRequest {
     @Schema(description = "AI 提供方: DEFAULT / CUSTOM / LOCAL", example = "CUSTOM")
     private String provider;
 
+    @Pattern(regexp = "^(deepseek|openai|claude)$", message = "customProvider 必须为 deepseek / openai / claude")
+    @Schema(description = "自定义 AI 厂商（provider=CUSTOM 时生效）", example = "deepseek")
+    private String customProvider;
+
     @Size(max = 500, message = "API Key 最多 500 字")
     @Schema(description = "自定义 API Key（provider=CUSTOM 时必填）", example = "sk-xxxxxxxx")
     private String apiKey;
