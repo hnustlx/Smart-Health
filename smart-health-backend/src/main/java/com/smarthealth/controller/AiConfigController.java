@@ -34,7 +34,7 @@ public class AiConfigController {
     @PreAuthorize("isAuthenticated()")
     public Result<AiConfigResponse> saveConfig(@AuthenticationPrincipal UserPrincipal principal,
                                                 @Valid @RequestBody AiConfigRequest request) {
-        AiConfigResponse response = userAiConfigService.saveConfig(principal.getUserId(), request);
+        AiConfigResponse response = userAiConfigService.saveConfig(principal.getUserId(), principal.getRole(), request);
         return Result.success("配置保存成功", response);
     }
 

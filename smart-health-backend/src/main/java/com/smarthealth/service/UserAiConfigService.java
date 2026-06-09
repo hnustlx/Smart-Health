@@ -7,6 +7,7 @@ import com.smarthealth.dto.request.AiConfigRequest;
 import com.smarthealth.dto.response.AiConfigResponse;
 import com.smarthealth.entity.UserAiConfig;
 import com.smarthealth.mapper.UserAiConfigMapper;
+import com.smarthealth.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class UserAiConfigService {
 
     private final UserAiConfigMapper configMapper;
     private final RestTemplate restTemplate;
+    private final EncryptionUtil encryptionUtil;
 
     public AiConfigResponse getConfig(Long userId) {
         UserAiConfig config = configMapper.findByUserId(userId);
@@ -40,8 +42,12 @@ public class UserAiConfigService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public AiConfigResponse saveConfig(Long userId, AiConfigRequest request) {
+    public AiConfigResponse saveConfig(Long userId, String role, AiConfigRequest request) {
         String provider = request.getProvider() != null ? request.getProvider() : "DEFAULT";
+
+        if ("LOCAL".equals(provider) && !"VIP".equals(role)) {
+            throw new BusinessException(ResultCode.FORBIDDEN, "非 VIP 用户不能使用本地模型");
+        }
 
         if ("CUSTOM".equals(provider)) {
             if (request.getApiKey() == null || request.getApiKey().isBlank()) {
@@ -50,7 +56,7 @@ public class UserAiConfigService {
             testConnection(request);
         }
 
-        String apiKey = "CUSTOM".equals(provider) ? request.getApiKey() : null;
+        String apiKey = "CUSTOM".equals(provider) ? encryptionUtil.encrypt(request.getApiKey()) : null;
         String apiUrl = "CUSTOM".equals(provider) ? request.getApiUrl() : null;
         String model = "CUSTOM".equals(provider) ? request.getModel() : null;
 
@@ -140,7 +146,8 @@ public class UserAiConfigService {
     }
 
     private AiConfigResponse toResponse(UserAiConfig config) {
-        String maskedKey = config.getApiKey() != null ? maskApiKey(config.getApiKey()) : null;
+        String decryptedKey = config.getApiKey() != null ? encryptionUtil.decrypt(config.getApiKey()) : null;
+        String maskedKey = decryptedKey != null ? maskApiKey(decryptedKey) : null;
         return new AiConfigResponse(config.getProvider(), maskedKey, config.getApiUrl(), config.getModel());
     }
 

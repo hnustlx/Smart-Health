@@ -5,6 +5,7 @@ import com.smarthealth.common.BusinessException;
 import com.smarthealth.common.ResultCode;
 import com.smarthealth.entity.UserAiConfig;
 import com.smarthealth.mapper.UserAiConfigMapper;
+import com.smarthealth.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,15 @@ public class AiRoutingService {
     private final UserAiConfigMapper configMapper;
     private final DeepSeekAiService deepSeekAiService;
     private final OllamaAiService ollamaAiService;
+    private final EncryptionUtil encryptionUtil;
 
     public String chat(Long userId, String role, String systemPrompt, String userPrompt) {
         UserAiConfig config = configMapper.findByUserId(userId);
 
         if (config != null && "CUSTOM".equals(config.getProvider())) {
+            String decryptedKey = encryptionUtil.decrypt(config.getApiKey());
             return deepSeekAiService.chat(
-                    config.getApiKey(),
+                    decryptedKey,
                     config.getApiUrl(),
                     config.getModel(),
                     systemPrompt,
