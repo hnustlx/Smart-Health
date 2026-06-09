@@ -16,7 +16,7 @@ public class GenerateCountResponse {
     private Integer used;
 
     @JsonProperty("limit")
-    @Schema(description = "今日限制次数", example = "2")
+    @Schema(description = "今日限制次数（普通用户 3，VIP 用户 5）", example = "3")
     private Integer limit;
 
     @JsonProperty("remaining")
