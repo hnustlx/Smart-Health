@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+
 @ExtendWith(MockitoExtension.class)
 class VipCodeServiceTest {
 
@@ -82,12 +84,13 @@ class VipCodeServiceTest {
     void activateVip_shouldSucceed() {
         when(vipCodeMapper.findByCode("VIP-ABCD1234")).thenReturn(validCode);
         when(userMapper.findById(3L)).thenReturn(user);
+        when(vipCodeMapper.atomicActivate(eq(1L), eq(3L), any(LocalDateTime.class))).thenReturn(1);
 
         User result = vipCodeService.activateVip("VIP-ABCD1234", 3L);
 
         assertEquals("VIP", result.getRole());
         assertNotNull(result.getVipExpireTime());
-        verify(vipCodeMapper).updateStatus(eq(1L), eq(1), eq(3L), any(LocalDateTime.class));
+        verify(vipCodeMapper).atomicActivate(eq(1L), eq(3L), any(LocalDateTime.class));
         verify(userMapper).updateRoleAndVipExpire(eq(3L), eq("VIP"), any(LocalDateTime.class));
     }
 

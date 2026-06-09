@@ -191,7 +191,7 @@ class AdminUserControllerTest {
                         List.of(new SimpleGrantedAuthority("ROLE_USER"))));
 
         mockMvc.perform(get("/api/v1/admin/users"))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
     }
 }

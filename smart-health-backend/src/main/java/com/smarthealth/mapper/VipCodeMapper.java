@@ -16,4 +16,7 @@ public interface VipCodeMapper {
 
     int updateStatus(@Param("id") Long id, @Param("status") Integer status,
                      @Param("usedBy") Long usedBy, @Param("usedAt") java.time.LocalDateTime usedAt);
+
+    int atomicActivate(@Param("id") Long id, @Param("usedBy") Long usedBy,
+                       @Param("usedAt") java.time.LocalDateTime usedAt);
 }

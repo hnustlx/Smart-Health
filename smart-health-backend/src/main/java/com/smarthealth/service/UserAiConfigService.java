@@ -84,12 +84,26 @@ public class UserAiConfigService {
 
     void testConnection(AiConfigRequest request) {
         try {
+            String url = request.getApiUrl() != null ? request.getApiUrl()
+                    : "https://api.deepseek.com/v1/chat/completions";
+
+            // SSRF protection: validate URL
+            java.net.URL parsedUrl = new java.net.URL(url);
+            String protocol = parsedUrl.getProtocol().toLowerCase();
+            String host = parsedUrl.getHost().toLowerCase();
+
+            if (!"https".equals(protocol)) {
+                throw new BusinessException(ResultCode.BAD_REQUEST, "API 地址必须使用 HTTPS");
+            }
+
+            if (isInternalHost(host)) {
+                throw new BusinessException(ResultCode.BAD_REQUEST, "不允许访问内网地址");
+            }
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(request.getApiKey());
 
-            String url = request.getApiUrl() != null ? request.getApiUrl()
-                    : "https://api.deepseek.com/v1/chat/completions";
             String model = request.getModel() != null ? request.getModel() : "deepseek-chat";
 
             Map<String, Object> requestBody = Map.of(
@@ -103,14 +117,26 @@ public class UserAiConfigService {
             HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.postForEntity(url, httpEntity, Map.class);
             if (response.getStatusCode().isError()) {
-                throw new BusinessException(ResultCode.BAD_REQUEST, "API Key 验证失败: " + response.getStatusCode());
+                throw new BusinessException(ResultCode.BAD_REQUEST, "API Key 验证失败");
             }
             log.info("AI connection test succeeded for url: {}", url);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            throw new BusinessException(ResultCode.BAD_REQUEST, "API 连接测试失败: " + e.getMessage());
+            log.warn("AI connection test failed for url: {}", e.getMessage());
+            throw new BusinessException(ResultCode.BAD_REQUEST, "API 连接测试失败");
         }
+    }
+
+    private boolean isInternalHost(String host) {
+        if (host.equals("localhost") || host.equals("127.0.0.1") || host.equals("0.0.0.0")
+                || host.endsWith(".local") || host.endsWith(".internal")) {
+            return true;
+        }
+        if (host.matches("^(10|127|169\\.254|172\\.(1[6-9]|2[0-9]|3[01])|192\\.168)\\..+")) {
+            return true;
+        }
+        return false;
     }
 
     private AiConfigResponse toResponse(UserAiConfig config) {
@@ -122,6 +148,10 @@ public class UserAiConfigService {
         if (key == null || key.length() < 8) {
             return "****";
         }
-        return key.substring(0, Math.min(6, key.length() - 4)) + "****" + key.substring(key.length() - 4);
+        int keep = Math.min(6, key.length() - 4);
+        if (keep < 2) {
+            keep = 2;
+        }
+        return key.substring(0, keep) + "****" + key.substring(key.length() - 4);
     }
 }

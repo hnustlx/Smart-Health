@@ -31,4 +31,10 @@
         SET status = #{status}, used_by = #{usedBy}, used_at = #{usedAt}
         WHERE id = #{id}
     </update>
+
+    <update id="atomicActivate">
+        UPDATE vip_activation_code
+        SET status = 1, used_by = #{usedBy}, used_at = #{usedAt}
+        WHERE id = #{id} AND status = 0
+    </update>
 </mapper>

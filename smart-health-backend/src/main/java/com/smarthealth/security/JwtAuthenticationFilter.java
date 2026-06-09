@@ -41,6 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String username = jwtTokenProvider.getUsernameFromToken(token);
             String role = jwtTokenProvider.getRoleFromToken(token);
+            if (role == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token 无效");
+                return;
+            }
 
             List<SimpleGrantedAuthority> authorities = List.of(
                     new SimpleGrantedAuthority("ROLE_" + role)

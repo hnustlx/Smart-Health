@@ -3,11 +3,12 @@ package com.smarthealth.mapper;
 
 import com.smarthealth.entity.UserAiConfig;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface UserAiConfigMapper {
-    UserAiConfig findByUserId(Long userId);
+    UserAiConfig findByUserId(@Param("userId") Long userId);
     void insert(UserAiConfig config);
     void update(UserAiConfig config);
-    void deleteByUserId(Long userId);
+    void deleteByUserId(@Param("userId") Long userId);
 }

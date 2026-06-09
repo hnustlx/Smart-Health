@@ -63,11 +63,18 @@ public class VipCodeService {
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
-        user.setRole("VIP");
-        user.setVipExpireTime(LocalDateTime.now().plusDays(30));
-        userMapper.updateRoleAndVipExpire(userId, "VIP", user.getVipExpireTime());
 
-        vipCodeMapper.updateStatus(record.getId(), 1, userId, LocalDateTime.now());
+        // Atomic update: only one thread can set status from 0 to 1
+        int affected = vipCodeMapper.atomicActivate(record.getId(), userId, LocalDateTime.now());
+        if (affected == 0) {
+            throw new BusinessException(ResultCode.CONFLICT, "激活码已被使用");
+        }
+
+        LocalDateTime vipExpireTime = LocalDateTime.now().plusDays(30);
+        userMapper.updateRoleAndVipExpire(userId, "VIP", vipExpireTime);
+
+        user.setRole("VIP");
+        user.setVipExpireTime(vipExpireTime);
         return user;
     }
 

@@ -156,7 +156,7 @@ class KnowledgeControllerTest {
                         List.of(new SimpleGrantedAuthority("ROLE_USER"))));
 
         mockMvc.perform(get("/api/v1/admin/knowledge/list"))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
     }
 }

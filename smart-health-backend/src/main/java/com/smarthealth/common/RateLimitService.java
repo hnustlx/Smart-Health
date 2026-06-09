@@ -23,6 +23,9 @@ public class RateLimitService {
             if (existing == null || now.isAfter(existing.getWindowEnd())) {
                 return new RateLimitEntry(now.plus(window), 1);
             }
+            if (existing.getCount() >= maxRequests) {
+                return existing;
+            }
             existing.incrementCount();
             return existing;
         });

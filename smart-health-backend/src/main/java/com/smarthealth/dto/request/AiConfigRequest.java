@@ -10,6 +10,7 @@ import lombok.Data;
 @Schema(description = "AI 配置请求")
 public class AiConfigRequest {
 
+    @Pattern(regexp = "^(DEFAULT|CUSTOM|LOCAL)$", message = "provider 必须为 DEFAULT / CUSTOM / LOCAL")
     @Schema(description = "AI 提供方: DEFAULT / CUSTOM / LOCAL", example = "CUSTOM")
     private String provider;
 

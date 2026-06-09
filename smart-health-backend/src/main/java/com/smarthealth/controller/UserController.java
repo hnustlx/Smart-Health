@@ -33,6 +33,8 @@ public class UserController {
     private final VipCodeService vipCodeService;
     private final RateLimitService rateLimitService;
 
+    private static final String TRUSTED_PROXY = "127.0.0.1";
+
     @Operation(summary = "用户注册")
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterRequest request,
@@ -58,11 +60,15 @@ public class UserController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String xfwd = request.getHeader("X-Forwarded-For");
-        if (xfwd != null && !xfwd.isBlank()) {
-            return xfwd.split(",")[0].trim();
+        String remoteAddr = request.getRemoteAddr();
+        // Only trust X-Forwarded-For from local proxies (Nginx on same machine)
+        if (TRUSTED_PROXY.equals(remoteAddr)) {
+            String xfwd = request.getHeader("X-Forwarded-For");
+            if (xfwd != null && !xfwd.isBlank()) {
+                return xfwd.split(",")[0].trim();
+            }
         }
-        return request.getRemoteAddr();
+        return remoteAddr;
     }
 
     @Operation(summary = "获取当前用户信息")

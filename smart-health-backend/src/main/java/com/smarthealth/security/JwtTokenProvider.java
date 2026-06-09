@@ -18,6 +18,10 @@ public class JwtTokenProvider {
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secret,
                             @Value("${jwt.expiration}") long expiration) {
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException(
+                    "JWT_SECRET 环境变量未设置或长度不足 32 字符，请检查配置");
+        }
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = expiration;
     }

@@ -89,7 +89,7 @@ class ChatControllerTest {
         mockMvc.perform(post("/api/v1/chat/ask")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
     }
 }

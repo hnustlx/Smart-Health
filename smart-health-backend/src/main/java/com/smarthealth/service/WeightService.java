@@ -38,6 +38,10 @@ public class WeightService {
     }
 
     public WeightTrendResponse getTrend(Long userId, String period) {
+        if (period != null && !List.of("week", "month", "year").contains(period)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "period 必须为 week / month / year");
+        }
+
         List<WeightRecord> allRecords = weightRecordMapper.findByUserId(userId);
         if (allRecords == null || allRecords.isEmpty()) {
             return new WeightTrendResponse(List.of(), List.of());
@@ -46,9 +50,6 @@ public class WeightService {
         LocalDate startDate;
         LocalDate now = LocalDate.now();
         switch (period) {
-            case "week":
-                startDate = now.minusDays(7);
-                break;
             case "month":
                 startDate = now.minusMonths(1);
                 break;
