@@ -74,7 +74,7 @@ class AiConfigControllerTest {
         request.setApiUrl("https://api.deepseek.com/v1/chat/completions");
         request.setModel("deepseek-chat");
 
-        when(userAiConfigService.saveConfig(eq(1L), any()))
+        when(userAiConfigService.saveConfig(eq(1L), eq("USER"), any()))
                 .thenReturn(new AiConfigResponse("CUSTOM", "sk-te****5678",
                         "https://api.deepseek.com/v1/chat/completions", "deepseek-chat"));
 

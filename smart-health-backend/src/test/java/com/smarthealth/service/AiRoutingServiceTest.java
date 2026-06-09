@@ -2,6 +2,7 @@ package com.smarthealth.service;
 
 import com.smarthealth.entity.UserAiConfig;
 import com.smarthealth.mapper.UserAiConfigMapper;
+import com.smarthealth.util.EncryptionUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +25,9 @@ class AiRoutingServiceTest {
     @Mock
     private OllamaAiService ollamaAiService;
 
+    @Mock
+    private EncryptionUtil encryptionUtil;
+
     @InjectMocks
     private AiRoutingService aiRoutingService;
 
@@ -31,16 +35,18 @@ class AiRoutingServiceTest {
     void chat_shouldUseCustomKey_whenConfigIsCUSTOM() {
         UserAiConfig config = new UserAiConfig();
         config.setProvider("CUSTOM");
-        config.setApiKey("sk-custom");
+        config.setApiKey("encrypted:sk-custom");
         config.setApiUrl("https://custom.api/v1/chat");
         config.setModel("custom-model");
         when(configMapper.findByUserId(1L)).thenReturn(config);
+        when(encryptionUtil.decrypt("encrypted:sk-custom")).thenReturn("sk-custom");
         when(deepSeekAiService.chat("sk-custom", "https://custom.api/v1/chat", "custom-model",
                 "system", "user")).thenReturn("custom response");
 
         String result = aiRoutingService.chat(1L, "USER", "system", "user");
 
         assertEquals("custom response", result);
+        verify(encryptionUtil).decrypt("encrypted:sk-custom");
         verify(deepSeekAiService).chat("sk-custom", "https://custom.api/v1/chat", "custom-model",
                 "system", "user");
     }
