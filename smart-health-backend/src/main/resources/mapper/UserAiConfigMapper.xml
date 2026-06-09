@@ -8,6 +8,7 @@
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
         <result column="provider" property="provider"/>
+        <result column="custom_provider" property="customProvider"/>
         <result column="api_key" property="apiKey"/>
         <result column="api_url" property="apiUrl"/>
         <result column="model" property="model"/>
@@ -15,19 +16,55 @@
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
 
+    <resultMap id="AdminResultMap" type="com.smarthealth.entity.UserAiConfig" extends="BaseResultMap">
+        <result column="username" property="username"/>
+    </resultMap>
+
     <select id="findByUserId" resultMap="BaseResultMap">
         SELECT * FROM user_ai_config WHERE user_id = #{userId}
     </select>
 
+    <select id="findAll" resultMap="AdminResultMap">
+        SELECT c.*, u.username
+        FROM user_ai_config c
+        LEFT JOIN user u ON c.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                u.username LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY c.updated_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM user_ai_config c
+        LEFT JOIN user u ON c.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                u.username LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findByUserIdWithUsername" resultMap="AdminResultMap">
+        SELECT c.*, u.username
+        FROM user_ai_config c
+        LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.user_id = #{userId}
+    </select>
+
     <insert id="insert" parameterType="com.smarthealth.entity.UserAiConfig"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user_ai_config (user_id, provider, api_key, api_url, model, created_at, updated_at)
-        VALUES (#{userId}, #{provider}, #{apiKey}, #{apiUrl}, #{model}, #{createdAt}, #{updatedAt})
+        INSERT INTO user_ai_config (user_id, provider, custom_provider, api_key, api_url, model, created_at, updated_at)
+        VALUES (#{userId}, #{provider}, #{customProvider}, #{apiKey}, #{apiUrl}, #{model}, #{createdAt}, #{updatedAt})
     </insert>
 
     <update id="update" parameterType="com.smarthealth.entity.UserAiConfig">
         UPDATE user_ai_config
         SET provider = #{provider},
+            custom_provider = #{customProvider},
             api_key = #{apiKey},
             api_url = #{apiUrl},
             model = #{model},

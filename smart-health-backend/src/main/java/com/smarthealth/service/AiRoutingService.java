@@ -15,6 +15,7 @@ public class AiRoutingService {
 
     private final UserAiConfigMapper configMapper;
     private final DeepSeekAiService deepSeekAiService;
+    private final ClaudeAiService claudeAiService;
     private final OllamaAiService ollamaAiService;
     private final EncryptionUtil encryptionUtil;
 
@@ -22,7 +23,20 @@ public class AiRoutingService {
         UserAiConfig config = configMapper.findByUserId(userId);
 
         if (config != null && "CUSTOM".equals(config.getProvider())) {
+            if (config.getApiKey() == null) {
+                throw new BusinessException(ResultCode.BAD_REQUEST, "自定义 API Key 未配置");
+            }
             String decryptedKey = encryptionUtil.decrypt(config.getApiKey());
+            String customProvider = config.getCustomProvider() != null ? config.getCustomProvider() : "deepseek";
+            if ("claude".equals(customProvider)) {
+                return claudeAiService.chat(
+                        decryptedKey,
+                        config.getApiUrl(),
+                        config.getModel(),
+                        systemPrompt,
+                        userPrompt
+                );
+            }
             return deepSeekAiService.chat(
                     decryptedKey,
                     config.getApiUrl(),

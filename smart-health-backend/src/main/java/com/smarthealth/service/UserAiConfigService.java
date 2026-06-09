@@ -36,7 +36,7 @@ public class UserAiConfigService {
     public AiConfigResponse getConfig(Long userId) {
         UserAiConfig config = configMapper.findByUserId(userId);
         if (config == null) {
-            return new AiConfigResponse("DEFAULT", null, null, null);
+            return new AiConfigResponse("DEFAULT", null, null, null, null);
         }
         return toResponse(config);
     }
@@ -49,11 +49,13 @@ public class UserAiConfigService {
             throw new BusinessException(ResultCode.FORBIDDEN, "非 VIP 用户不能使用本地模型");
         }
 
+        String customProvider = null;
         if ("CUSTOM".equals(provider)) {
             if (request.getApiKey() == null || request.getApiKey().isBlank()) {
                 throw new BusinessException(ResultCode.BAD_REQUEST, "自定义模式需提供 API Key");
             }
-            testConnection(request);
+            customProvider = request.getCustomProvider() != null ? request.getCustomProvider() : "deepseek";
+            testConnection(request, customProvider);
         }
 
         String apiKey = "CUSTOM".equals(provider) ? encryptionUtil.encrypt(request.getApiKey()) : null;
@@ -65,6 +67,7 @@ public class UserAiConfigService {
             UserAiConfig config = new UserAiConfig();
             config.setUserId(userId);
             config.setProvider(provider);
+            config.setCustomProvider(customProvider);
             config.setApiKey(apiKey);
             config.setApiUrl(apiUrl);
             config.setModel(model);
@@ -74,6 +77,7 @@ public class UserAiConfigService {
             return toResponse(config);
         } else {
             existing.setProvider(provider);
+            existing.setCustomProvider(customProvider);
             existing.setApiKey(apiKey);
             existing.setApiUrl(apiUrl);
             existing.setModel(model);
@@ -88,10 +92,14 @@ public class UserAiConfigService {
         configMapper.deleteByUserId(userId);
     }
 
-    void testConnection(AiConfigRequest request) {
+    void testConnection(AiConfigRequest request, String customProvider) {
         try {
-            String url = request.getApiUrl() != null ? request.getApiUrl()
-                    : "https://api.deepseek.com/v1/chat/completions";
+            String defaultUrl = switch (customProvider) {
+                case "openai" -> "https://api.openai.com/v1/chat/completions";
+                case "claude" -> "https://api.anthropic.com/v1/messages";
+                default -> "https://api.deepseek.com/v1/chat/completions";
+            };
+            String url = request.getApiUrl() != null ? request.getApiUrl() : defaultUrl;
 
             // SSRF protection: validate URL
             java.net.URL parsedUrl = new java.net.URL(url);
@@ -108,23 +116,41 @@ public class UserAiConfigService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(request.getApiKey());
 
-            String model = request.getModel() != null ? request.getModel() : "deepseek-chat";
+            if ("claude".equals(customProvider)) {
+                headers.set("x-api-key", request.getApiKey());
+                headers.set("anthropic-version", "2023-06-01");
 
-            Map<String, Object> requestBody = Map.of(
-                    "model", model,
-                    "messages", List.of(
-                            Map.of("role", "user", "content", "test")
-                    ),
-                    "max_tokens", 5
-            );
-
-            HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, httpEntity, Map.class);
-            if (response.getStatusCode().isError()) {
-                throw new BusinessException(ResultCode.BAD_REQUEST, "API Key 验证失败");
+                String model = request.getModel() != null ? request.getModel() : "claude-3-haiku-20240307";
+                Map<String, Object> requestBody = Map.of(
+                        "model", model,
+                        "max_tokens", 5,
+                        "messages", List.of(
+                                Map.of("role", "user", "content", "test")
+                        )
+                );
+                HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
+                ResponseEntity<Map> response = restTemplate.postForEntity(url, httpEntity, Map.class);
+                if (response.getStatusCode().isError()) {
+                    throw new BusinessException(ResultCode.BAD_REQUEST, "API Key 验证失败");
+                }
+            } else {
+                headers.setBearerAuth(request.getApiKey());
+                String model = request.getModel() != null ? request.getModel() : "deepseek-chat";
+                Map<String, Object> requestBody = Map.of(
+                        "model", model,
+                        "messages", List.of(
+                                Map.of("role", "user", "content", "test")
+                        ),
+                        "max_tokens", 5
+                );
+                HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
+                ResponseEntity<Map> response = restTemplate.postForEntity(url, httpEntity, Map.class);
+                if (response.getStatusCode().isError()) {
+                    throw new BusinessException(ResultCode.BAD_REQUEST, "API Key 验证失败");
+                }
             }
+
             log.info("AI connection test succeeded for url: {}", url);
         } catch (BusinessException e) {
             throw e;
@@ -136,6 +162,7 @@ public class UserAiConfigService {
 
     private boolean isInternalHost(String host) {
         if (host.equals("localhost") || host.equals("127.0.0.1") || host.equals("0.0.0.0")
+                || host.equals("::1") || host.equals("[::1]")
                 || host.endsWith(".local") || host.endsWith(".internal")) {
             return true;
         }
@@ -148,7 +175,7 @@ public class UserAiConfigService {
     private AiConfigResponse toResponse(UserAiConfig config) {
         String decryptedKey = config.getApiKey() != null ? encryptionUtil.decrypt(config.getApiKey()) : null;
         String maskedKey = decryptedKey != null ? maskApiKey(decryptedKey) : null;
-        return new AiConfigResponse(config.getProvider(), maskedKey, config.getApiUrl(), config.getModel());
+        return new AiConfigResponse(config.getProvider(), config.getCustomProvider(), maskedKey, config.getApiUrl(), config.getModel());
     }
 
     public static String maskApiKey(String key) {
