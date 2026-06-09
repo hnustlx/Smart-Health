@@ -22,6 +22,7 @@
         <el-menu-item index="/plan"><span class="nav-dot"></span>AI 计划</el-menu-item>
         <el-menu-item index="/history"><span class="nav-dot"></span>历史计划</el-menu-item>
         <el-menu-item v-if="user?.role === 'VIP'" index="/chat"><span class="nav-dot"></span>智能问答</el-menu-item>
+        <el-menu-item index="/ai-config"><span class="nav-dot"></span>AI 配置</el-menu-item>
         <el-menu-item index="/vip"><span class="nav-dot"></span>升级 VIP</el-menu-item>
       </el-menu>
 
@@ -67,6 +68,7 @@ const titles = {
   '/plan': 'AI 计划',
   '/history': '历史计划',
   '/chat': '智能问答',
+  '/ai-config': 'AI 配置',
   '/vip': '升级 VIP'
 }
 

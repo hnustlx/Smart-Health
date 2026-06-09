@@ -12,6 +12,7 @@
       <el-menu router :default-active="route.path" class="admin-menu">
         <el-menu-item index="/admin">总览</el-menu-item>
         <el-menu-item index="/admin/users">用户管理</el-menu-item>
+        <el-menu-item index="/admin/vip-codes">VIP 激活码</el-menu-item>
         <el-menu-item index="/admin/knowledge">健康知识库</el-menu-item>
       </el-menu>
 
@@ -49,6 +50,7 @@ const user = computed(() => getUser())
 const titles = {
   '/admin': '后台总览',
   '/admin/users': '用户管理',
+  '/admin/vip-codes': 'VIP 激活码',
   '/admin/knowledge': '健康知识库'
 }
 

@@ -15,6 +15,17 @@ let users = [
   { id: 4, username: 'demo_disabled', role: 'USER', status: 0, vipExpireTime: '' }
 ]
 
+let vipCodes = [
+  { id: 1, code: 'VIP-A1B2C3D4', status: 0, createdBy: 1, usedBy: null, createdAt: '2026-06-09T08:00:00', expiresAt: '2026-06-16T08:00:00', usedAt: null }
+]
+
+let aiConfig = {
+  provider: 'DEFAULT',
+  apiKey: '',
+  apiUrl: '',
+  model: 'deepseek-chat'
+}
+
 let knowledgeList = [
   {
     id: 'DEMO_KNOWLEDGE_001',
@@ -138,6 +149,13 @@ function routeMock(method, path, config) {
     return weightRecords
   }
 
+  if (method === 'get' && path === '/weight/trend') {
+    return {
+      dates: weightRecords.map((item) => item.recordDate),
+      values: weightRecords.map((item) => item.weight)
+    }
+  }
+
   if (method === 'post' && path === '/weight/add') {
     const body = parseBody(config.data)
     const record = {
@@ -157,9 +175,41 @@ function routeMock(method, path, config) {
 
   if (method === 'get' && path === '/plan/generate-count') {
     const isVip = getCurrentRole() === 'VIP'
-    const limitCount = isVip ? 5 : 2
-    const usedCount = Math.min(plans.length, limitCount)
-    return { usedCount, limitCount, remainingCount: Math.max(0, limitCount - usedCount) }
+    const limit = isVip ? 5 : 3
+    const used = Math.min(plans.length, limit)
+    return { used, limit, remaining: Math.max(0, limit - used) }
+  }
+
+  if (method === 'post' && path === '/user/activate-vip') {
+    const body = parseBody(config.data)
+    const code = vipCodes.find((item) => item.code === body.code)
+    if (!code || code.status !== 0) {
+      return notFound('VIP code is invalid')
+    }
+    code.status = 1
+    code.usedBy = 3
+    code.usedAt = new Date().toISOString().slice(0, 19)
+    return { userId: 3, username: 'chen_ming', role: 'VIP', status: 1, vipExpireTime: '2026-07-09T00:00:00' }
+  }
+
+  if (method === 'get' && path === '/ai-config') {
+    return aiConfig
+  }
+
+  if (method === 'post' && path === '/ai-config') {
+    const body = parseBody(config.data)
+    aiConfig = {
+      provider: body.provider || 'DEFAULT',
+      apiKey: body.apiKey ? 'sk-****demo' : aiConfig.apiKey,
+      apiUrl: body.apiUrl || '',
+      model: body.model || 'deepseek-chat'
+    }
+    return aiConfig
+  }
+
+  if (method === 'delete' && path === '/ai-config') {
+    aiConfig = { provider: 'DEFAULT', apiKey: '', apiUrl: '', model: 'deepseek-chat' }
+    return true
   }
 
   if (method === 'post' && path === '/plan/generate') {
@@ -218,14 +268,48 @@ function routeMock(method, path, config) {
     return true
   }
 
+  const adminProfileMatch = path.match(/^\/admin\/users\/(\d+)\/profile$/)
+  if (adminProfileMatch && method === 'get') {
+    return profile
+  }
+
   const adminWeightsMatch = path.match(/^\/admin\/users\/(\d+)\/weights$/)
   if (adminWeightsMatch && method === 'get') {
     return weightRecords
   }
 
+  const adminDeleteWeightMatch = path.match(/^\/admin\/users\/weights\/(\d+)$/)
+  if (adminDeleteWeightMatch && method === 'delete') {
+    weightRecords = weightRecords.filter((item) => String(item.id) !== adminDeleteWeightMatch[1])
+    return true
+  }
+
   const adminPlansMatch = path.match(/^\/admin\/users\/(\d+)\/plans$/)
   if (adminPlansMatch && method === 'get') {
     return plans
+  }
+
+  const adminDeletePlanMatch = path.match(/^\/admin\/users\/plans\/(\d+)$/)
+  if (adminDeletePlanMatch && method === 'delete') {
+    plans = plans.filter((item) => String(item.id) !== adminDeletePlanMatch[1])
+    return true
+  }
+
+  if (path === '/admin/vip-codes/list' && method === 'get') {
+    return vipCodes
+  }
+
+  if (path === '/admin/vip-codes/generate' && method === 'post') {
+    const count = Number(config.params?.count || 1)
+    const codes = Array.from({ length: count }, (_, index) => {
+      const code = `VIP-DEMO${String(Date.now() + index).slice(-4)}`
+      vipCodes = [
+        { id: Date.now() + index, code, status: 0, createdBy: 1, usedBy: null, createdAt: new Date().toISOString().slice(0, 19), expiresAt: '2026-06-16T08:00:00', usedAt: null },
+        ...vipCodes
+      ]
+      return code
+    })
+    return { codes, count: codes.length }
   }
 
   if (path === '/admin/knowledge/list' && method === 'get') {

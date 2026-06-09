@@ -149,7 +149,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Bicycle, Collection, ForkSpoon, Medal } from '@element-plus/icons-vue'
-import { generatePlan, getGenerateCount } from '../api/modules/plan'
+import { generatePlan, getGenerateCount, normalizeGenerateCount } from '../api/modules/plan'
 import { getUser } from '../utils/auth'
 
 const generating = ref(false)
@@ -162,7 +162,7 @@ const countText = computed(() => {
   if (!count.value) {
     return '待加载'
   }
-  return `${count.value.usedCount}/${count.value.limitCount}，剩余 ${count.value.remainingCount}`
+  return `${count.value.used}/${count.value.limit}，剩余 ${count.value.remaining}`
 })
 const dietPlan = computed(() => plan.value?.planContent?.dietPlan || [])
 const exercisePlan = computed(() => plan.value?.planContent?.exercisePlan || [])
@@ -212,7 +212,7 @@ const vipItems = computed(() => {
 onMounted(loadCount)
 
 async function loadCount() {
-  count.value = await getGenerateCount()
+  count.value = normalizeGenerateCount(await getGenerateCount())
 }
 
 async function generate() {

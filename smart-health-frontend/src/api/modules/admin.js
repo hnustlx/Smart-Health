@@ -24,6 +24,26 @@ export function getUserPlans(id) {
   return request.get(`/admin/users/${id}/plans`)
 }
 
+export function getUserProfile(id) {
+  return request.get(`/admin/users/${id}/profile`)
+}
+
+export function deleteUserWeight(recordId) {
+  return request.delete(`/admin/users/weights/${recordId}`)
+}
+
+export function deleteUserPlan(planId) {
+  return request.delete(`/admin/users/plans/${planId}`)
+}
+
+export function generateVipCodes(count) {
+  return request.post('/admin/vip-codes/generate', undefined, { params: { count } })
+}
+
+export function getVipCodes() {
+  return request.get('/admin/vip-codes/list')
+}
+
 export function createKnowledge(data) {
   return request.post('/admin/knowledge', data)
 }

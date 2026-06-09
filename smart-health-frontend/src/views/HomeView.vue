@@ -82,7 +82,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { getCurrentUser } from '../api/modules/auth'
-import { getGenerateCount, getPlanHistory } from '../api/modules/plan'
+import { getGenerateCount, getPlanHistory, normalizeGenerateCount } from '../api/modules/plan'
 import { getProfile } from '../api/modules/profile'
 import { getWeightHistory } from '../api/modules/weight'
 import { getUser, setUser } from '../utils/auth'
@@ -104,15 +104,15 @@ const displayName = computed(() => {
 })
 const planCountText = computed(() => {
   if (!planCount.value) {
-    return isVip.value ? '5 次' : '2 次'
+    return isVip.value ? '5 次' : '3 次'
   }
-  return `${planCount.value.remainingCount} 次`
+  return `${planCount.value.remaining} 次`
 })
 const planLimitText = computed(() => {
   if (!planCount.value) {
-    return `${isVip.value ? 'VIP 用户' : '普通用户'}每日可生成 ${isVip.value ? 5 : 2} 次`
+    return `${isVip.value ? 'VIP 用户' : '普通用户'}每日可生成 ${isVip.value ? 5 : 3} 次`
   }
-  return `${isVip.value ? 'VIP 用户' : '普通用户'}今日已用 ${planCount.value.usedCount}/${planCount.value.limitCount}`
+  return `${isVip.value ? 'VIP 用户' : '普通用户'}今日已用 ${planCount.value.used}/${planCount.value.limit}`
 })
 const profileStatus = computed(() => (profile.value ? '已同步' : '待同步'))
 const profileSummary = computed(() => {
@@ -219,7 +219,7 @@ async function loadHomeData() {
     weights.value = [...weightData.value].sort((a, b) => a.recordDate.localeCompare(b.recordDate))
   }
   if (countData.status === 'fulfilled') {
-    planCount.value = countData.value
+    planCount.value = normalizeGenerateCount(countData.value)
   }
   if (historyData.status === 'fulfilled') {
     plans.value = [...historyData.value].sort((a, b) => b.createTime.localeCompare(a.createTime))

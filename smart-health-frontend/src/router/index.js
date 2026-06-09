@@ -66,6 +66,11 @@ const routes = [
         path: 'vip',
         name: 'VipUpgrade',
         component: () => import('../views/VipUpgradeView.vue')
+      },
+      {
+        path: 'ai-config',
+        name: 'AiConfig',
+        component: () => import('../views/AiConfigView.vue')
       }
     ]
   },
@@ -103,6 +108,11 @@ const routes = [
         path: 'knowledge',
         name: 'AdminKnowledge',
         component: () => import('../views/admin/AdminKnowledgeView.vue')
+      },
+      {
+        path: 'vip-codes',
+        name: 'AdminVipCodes',
+        component: () => import('../views/admin/AdminVipCodesView.vue')
       }
     ]
   },

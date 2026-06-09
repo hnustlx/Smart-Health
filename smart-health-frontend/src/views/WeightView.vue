@@ -106,12 +106,16 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { addWeight, deleteWeight, getWeightHistory } from '../api/modules/weight'
+import { addWeight, deleteWeight, getWeightHistory, getWeightTrend } from '../api/modules/weight'
 
 const formRef = ref()
 const loading = ref(false)
 const saving = ref(false)
 const records = ref([])
+const trend = ref({
+  dates: [],
+  values: []
+})
 const filters = reactive({
   date: '',
   weight: ''
@@ -127,8 +131,19 @@ const rules = {
   recordDate: [{ required: true, message: '请选择记录日期', trigger: 'change' }]
 }
 
+const chartRecords = computed(() => {
+  if (trend.value.dates?.length && trend.value.values?.length) {
+    return trend.value.dates.map((date, index) => ({
+      id: `trend-${date}-${index}`,
+      recordDate: date,
+      weight: trend.value.values[index]
+    }))
+  }
+  return records.value
+})
+
 const chartSeries = computed(() => {
-  const values = records.value.map((item) => Number(item.weight))
+  const values = chartRecords.value.map((item) => Number(item.weight))
   const min = Math.min(...values)
   const max = Math.max(...values)
   const padding = Math.max((max - min) * 0.18, 0.4)
@@ -136,8 +151,8 @@ const chartSeries = computed(() => {
   const chartMax = max + padding
   const range = chartMax - chartMin || 1
 
-  return records.value.map((item, index) => {
-    const x = records.value.length === 1 ? 390 : 64 + (index * 652) / (records.value.length - 1)
+  return chartRecords.value.map((item, index) => {
+    const x = chartRecords.value.length === 1 ? 390 : 64 + (index * 652) / (chartRecords.value.length - 1)
     const y = 260 - ((Number(item.weight) - chartMin) / range) * 222
     return {
       ...item,
@@ -149,7 +164,7 @@ const chartSeries = computed(() => {
 })
 
 const trendPoints = computed(() => {
-  if (records.value.length === 1) {
+  if (chartRecords.value.length === 1) {
     const point = chartSeries.value[0]
     return `64,${point.y} 716,${point.y}`
   }
@@ -165,7 +180,7 @@ const chartAreaPath = computed(() => {
 })
 
 const yTicks = computed(() => {
-  const values = records.value.map((item) => Number(item.weight))
+  const values = chartRecords.value.map((item) => Number(item.weight))
   const min = Math.min(...values)
   const max = Math.max(...values)
   const padding = Math.max((max - min) * 0.18, 0.4)
@@ -226,8 +241,16 @@ onMounted(loadRecords)
 async function loadRecords() {
   loading.value = true
   try {
-    const data = await getWeightHistory()
-    records.value = [...data].sort((a, b) => a.recordDate.localeCompare(b.recordDate))
+    const [historyResult, trendResult] = await Promise.allSettled([
+      getWeightHistory(),
+      getWeightTrend('week')
+    ])
+    if (historyResult.status === 'fulfilled') {
+      records.value = [...historyResult.value].sort((a, b) => a.recordDate.localeCompare(b.recordDate))
+    }
+    if (trendResult.status === 'fulfilled') {
+      trend.value = trendResult.value || { dates: [], values: [] }
+    }
   } finally {
     loading.value = false
   }

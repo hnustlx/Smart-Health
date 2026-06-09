@@ -32,6 +32,12 @@ request.interceptors.response.use(
     if (body.code === 200) {
       return body.data
     }
+    if (body.code === 401) {
+      clearAuth()
+      ElMessage.warning(body.message || '登录已失效，请重新登录')
+      router.push('/login')
+      return Promise.reject(body)
+    }
     ElMessage.error(body.message || '请求失败')
     return Promise.reject(body)
   },

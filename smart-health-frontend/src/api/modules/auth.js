@@ -11,3 +11,7 @@ export function register(data) {
 export function getCurrentUser() {
   return request.get('/user/current')
 }
+
+export function activateVip(data) {
+  return request.post('/user/activate-vip', data)
+}
