@@ -58,7 +58,7 @@ class AiConfigControllerTest {
     @Test
     void getConfig_shouldReturnConfig() throws Exception {
         when(userAiConfigService.getConfig(1L))
-                .thenReturn(new AiConfigResponse("DEFAULT", null, null, null));
+                .thenReturn(new AiConfigResponse("DEFAULT", null, null, null, null));
 
         mockMvc.perform(get("/api/v1/ai-config"))
                 .andExpect(status().isOk())
@@ -70,12 +70,13 @@ class AiConfigControllerTest {
     void saveConfig_shouldSaveAndReturn() throws Exception {
         AiConfigRequest request = new AiConfigRequest();
         request.setProvider("CUSTOM");
+        request.setCustomProvider("deepseek");
         request.setApiKey("sk-test12345678");
         request.setApiUrl("https://api.deepseek.com/v1/chat/completions");
         request.setModel("deepseek-chat");
 
         when(userAiConfigService.saveConfig(eq(1L), eq("USER"), any()))
-                .thenReturn(new AiConfigResponse("CUSTOM", "sk-te****5678",
+                .thenReturn(new AiConfigResponse("CUSTOM", "deepseek", "sk-te****5678",
                         "https://api.deepseek.com/v1/chat/completions", "deepseek-chat"));
 
         mockMvc.perform(post("/api/v1/ai-config")

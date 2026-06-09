@@ -28,6 +28,9 @@ class AiRoutingServiceTest {
     @Mock
     private EncryptionUtil encryptionUtil;
 
+    @Mock
+    private ClaudeAiService claudeAiService;
+
     @InjectMocks
     private AiRoutingService aiRoutingService;
 
@@ -62,6 +65,28 @@ class AiRoutingServiceTest {
 
         assertEquals("ollama response", result);
         verify(ollamaAiService).chat("system", "user");
+    }
+
+    @Test
+    void chat_shouldUseClaude_whenConfigIsClaude() {
+        UserAiConfig config = new UserAiConfig();
+        config.setProvider("CUSTOM");
+        config.setCustomProvider("claude");
+        config.setApiKey("encrypted:sk-claude-key");
+        config.setApiUrl("https://api.anthropic.com/v1/messages");
+        config.setModel("claude-3-opus-20240229");
+        when(configMapper.findByUserId(1L)).thenReturn(config);
+        when(encryptionUtil.decrypt("encrypted:sk-claude-key")).thenReturn("sk-claude-key");
+        when(claudeAiService.chat("sk-claude-key", "https://api.anthropic.com/v1/messages",
+                "claude-3-opus-20240229", "system", "user")).thenReturn("claude response");
+
+        String result = aiRoutingService.chat(1L, "USER", "system", "user");
+
+        assertEquals("claude response", result);
+        verify(encryptionUtil).decrypt("encrypted:sk-claude-key");
+        verify(claudeAiService).chat("sk-claude-key", "https://api.anthropic.com/v1/messages",
+                "claude-3-opus-20240229", "system", "user");
+        verifyNoInteractions(deepSeekAiService);
     }
 
     @Test
