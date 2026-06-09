@@ -14,7 +14,7 @@ import java.util.List;
 public class WeightTrendResponse {
 
     @JsonProperty("dates")
-    @Schema(description = "日期列表", example = "[\"06-02\",\"06-03\"]")
+    @Schema(description = "日期列表", example = "[\"2026-06-01\",\"2026-06-02\"]")
     private List<String> dates;
 
     @JsonProperty("values")

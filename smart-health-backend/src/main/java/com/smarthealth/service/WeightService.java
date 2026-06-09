@@ -60,7 +60,7 @@ public class WeightService {
                 startDate = now.minusDays(7);
         }
 
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM-dd");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         List<String> dates = new ArrayList<>();
         List<BigDecimal> values = new ArrayList<>();
 
