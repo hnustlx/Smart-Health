@@ -1,0 +1,58 @@
+<svg width="184" height="184" viewBox="0 0 184 184" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">青芽图标</title>
+  <desc id="desc">绿色叶冠健康助手头像图标。</desc>
+  <defs>
+    <linearGradient id="markBg" x1="0" y1="0" x2="184" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECFDF5"/>
+      <stop offset="1" stop-color="#CFF7DE"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="49" y1="0" x2="126" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BBF7D0"/>
+      <stop offset="0.44" stop-color="#4ADE80"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="26" y1="44" x2="157" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EE4A4"/>
+      <stop offset="0.52" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(78 74) rotate(55) scale(103 98)">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.74" stop-color="#FFFDF7"/>
+      <stop offset="1" stop-color="#F8F0DF"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(56 102) scale(18 20)">
+      <stop stop-color="#50665F"/>
+      <stop offset="0.4" stop-color="#20352F"/>
+      <stop offset="1" stop-color="#101C19"/>
+    </radialGradient>
+    <filter id="shadow" x="-18" y="-10" width="220" height="220" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#064E3B" flood-opacity="0.16"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#10B981" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+  <rect width="184" height="184" rx="40" fill="url(#markBg)"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="92" cy="166" rx="63" ry="16" fill="#064E3B" opacity="0.1"/>
+    <path d="M92 28C104 1 138 -6 161 12C143 35 120 45 96 66C70 45 48 36 29 13C51 -6 80 1 92 28Z" fill="url(#leaf)"/>
+    <path d="M96 66C96 51 95 37 92 28" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.62"/>
+    <path d="M79 44C65 34 52 26 35 16" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.46"/>
+    <path d="M111 44C125 33 139 25 155 14" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.46"/>
+    <path d="M30 83C44 43 69 28 92 32C117 28 146 44 156 83C136 69 113 64 92 67C68 64 49 69 30 83Z" fill="#0F9F74" opacity="0.34"/>
+    <circle cx="92" cy="102" r="74" fill="url(#ring)"/>
+    <circle cx="92" cy="108" r="56" fill="url(#face)"/>
+    <path d="M54 81C66 58 80 52 92 53C108 52 125 60 133 81" stroke="#E7FFF1" stroke-width="6" stroke-linecap="round" opacity="0.36"/>
+    <ellipse cx="70" cy="106" rx="10" ry="12" fill="url(#eye)"/>
+    <ellipse cx="114" cy="106" rx="10" ry="12" fill="url(#eye)"/>
+    <circle cx="66" cy="101" r="3.5" fill="#FFFFFF"/>
+    <circle cx="110" cy="101" r="3.5" fill="#FFFFFF"/>
+    <path d="M60 89C68 84 75 85 81 90" stroke="#047857" stroke-width="3.5" stroke-linecap="round" opacity="0.24"/>
+    <path d="M104 90C110 85 117 84 125 89" stroke="#047857" stroke-width="3.5" stroke-linecap="round" opacity="0.24"/>
+    <ellipse cx="56" cy="127" rx="15" ry="10" fill="#FB7185" opacity="0.3"/>
+    <ellipse cx="128" cy="127" rx="15" ry="10" fill="#FB7185" opacity="0.3"/>
+    <path d="M80 130C87 138 107 138 114 130" stroke="#17352D" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="33" cy="121" r="17" fill="#DFF7EA" stroke="#10B981" stroke-width="5"/>
+    <circle cx="151" cy="121" r="17" fill="#DFF7EA" stroke="#10B981" stroke-width="5"/>
+    <path d="M38 166H67L77 149L90 179L104 155L114 166H143" stroke="#FF5C8A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

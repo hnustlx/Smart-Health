@@ -10,6 +10,8 @@ public class VipActivationCode {
     private Integer status;
     private Long usedBy;
     private Long createdBy;
+    private Integer vipDays;
+    private String source;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private LocalDateTime usedAt;

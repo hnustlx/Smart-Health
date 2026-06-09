@@ -19,6 +19,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VipCodeService {
 
+    private static final int DEFAULT_VIP_DAYS = 30;
+
     private final VipCodeMapper vipCodeMapper;
     private final UserMapper userMapper;
 
@@ -34,15 +36,22 @@ public class VipCodeService {
                 code = "VIP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             } while (vipCodeMapper.findByCode(code) != null);
 
-            VipActivationCode entity = new VipActivationCode();
-            entity.setCode(code);
-            entity.setCreatedBy(adminId);
-            entity.setCreatedAt(now);
-            entity.setExpiresAt(expiresAt);
-            vipCodeMapper.insert(entity);
+            vipCodeMapper.insert(buildCode(code, adminId, DEFAULT_VIP_DAYS, "ADMIN", now, expiresAt));
             codes.add(code);
         }
         return codes;
+    }
+
+    @Transactional
+    public String generateCheckinRewardCode(Long userId, int vipDays) {
+        LocalDateTime now = LocalDateTime.now();
+        String code;
+        do {
+            code = "VIP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } while (vipCodeMapper.findByCode(code) != null);
+
+        vipCodeMapper.insert(buildCode(code, userId, vipDays, "CHECKIN_REWARD", now, now.plusDays(7)));
+        return code;
     }
 
     @Transactional
@@ -63,8 +72,12 @@ public class VipCodeService {
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
+        int vipDays = record.getVipDays() == null ? DEFAULT_VIP_DAYS : record.getVipDays();
+        LocalDateTime baseExpireTime = user.getVipExpireTime() != null && user.getVipExpireTime().isAfter(LocalDateTime.now())
+                ? user.getVipExpireTime()
+                : LocalDateTime.now();
         user.setRole("VIP");
-        user.setVipExpireTime(LocalDateTime.now().plusDays(30));
+        user.setVipExpireTime(baseExpireTime.plusDays(vipDays));
         userMapper.updateRoleAndVipExpire(userId, "VIP", user.getVipExpireTime());
 
         vipCodeMapper.updateStatus(record.getId(), 1, userId, LocalDateTime.now());
@@ -73,5 +86,17 @@ public class VipCodeService {
 
     public List<VipActivationCode> listAll() {
         return vipCodeMapper.findAll();
+    }
+
+    private VipActivationCode buildCode(String code, Long createdBy, int vipDays, String source,
+                                        LocalDateTime createdAt, LocalDateTime expiresAt) {
+        VipActivationCode entity = new VipActivationCode();
+        entity.setCode(code);
+        entity.setCreatedBy(createdBy);
+        entity.setVipDays(vipDays);
+        entity.setSource(source);
+        entity.setCreatedAt(createdAt);
+        entity.setExpiresAt(expiresAt);
+        return entity;
     }
 }

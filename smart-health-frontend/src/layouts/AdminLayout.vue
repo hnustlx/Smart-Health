@@ -2,9 +2,9 @@
   <el-container class="admin-shell">
     <el-aside class="admin-sidebar" width="248px">
       <div class="admin-brand">
-        <div class="admin-brand-mark">SH</div>
+        <img class="admin-brand-mark" :src="qingyaMark" alt="青芽" />
         <div>
-          <h1>Smart Health Admin</h1>
+          <h1>青芽 Admin</h1>
           <p>后台管理中心</p>
         </div>
       </div>
@@ -42,6 +42,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { clearAuth, getUser } from '../utils/auth'
+import qingyaMark from '../assets/qingya-mark.svg'
 
 const route = useRoute()
 const router = useRouter()

@@ -17,7 +17,7 @@
           <div ref="chatAssistantWrap" class="chat-assistant-wrap">
             <HealthAssistant state="idle" />
           </div>
-          <h3>你的健康小助手已就绪</h3>
+          <h3>青芽已就绪</h3>
           <p>输入饮食、运动或健康管理问题，我会结合知识库给出建议。</p>
         </div>
         <div v-for="(message, index) in messages" :key="index" :class="['chat-turn', message.role]">
@@ -25,7 +25,7 @@
             <HealthAssistant state="idle" />
           </div>
           <div class="chat-message">
-            <strong>{{ message.role === 'user' ? '我' : 'AI 健康助手' }}</strong>
+            <strong>{{ message.role === 'user' ? '我' : '青芽' }}</strong>
             <p>{{ message.content }}</p>
             <div v-if="message.references?.length" class="reference-list">
               <el-tag v-for="item in message.references" :key="`${index}-${item.category}-${item.title}`">
@@ -39,7 +39,7 @@
       <el-form ref="formRef" :model="form" :rules="rules" class="chat-form chat-composer" @submit.prevent="submit">
         <div class="chat-composer-head">
           <div>
-            <span>Ask Smart Health</span>
+            <span>Ask 青芽</span>
             <strong>描述你的饮食、运动或健康管理问题</strong>
           </div>
           <div class="chat-quick-actions">

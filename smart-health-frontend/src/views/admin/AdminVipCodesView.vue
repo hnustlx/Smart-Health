@@ -1,7 +1,7 @@
 <template>
   <section class="admin-page">
     <div class="admin-section-heading">
-      <p>VIP Codes</p>
+      <p>激活码</p>
       <h2>VIP 激活码管理</h2>
     </div>
 
@@ -23,7 +23,13 @@
         </template>
       </el-table-column>
       <el-table-column prop="usedBy" label="使用用户" width="120" />
-      <el-table-column prop="createdBy" label="创建管理员" width="120" />
+      <el-table-column prop="createdBy" label="创建者" width="120" />
+      <el-table-column prop="vipDays" label="VIP 天数" width="110" />
+      <el-table-column label="来源" width="130">
+        <template #default="{ row }">
+          {{ sourceText(row.source) }}
+        </template>
+      </el-table-column>
       <el-table-column prop="createdAt" label="创建时间" min-width="180" />
       <el-table-column prop="expiresAt" label="过期时间" min-width="180" />
       <el-table-column prop="usedAt" label="使用时间" min-width="180" />
@@ -71,5 +77,9 @@ function statusText(status) {
 
 function statusType(status) {
   return status === 1 ? 'info' : status === 2 ? 'danger' : 'success'
+}
+
+function sourceText(source) {
+  return source === 'CHECKIN_REWARD' ? '打卡奖励' : '管理员生成'
 }
 </script>

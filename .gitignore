@@ -12,3 +12,5 @@ target/
 application-prod.yml
 .vscode/
 docker-compose.override.yml
+tools/
+.local/

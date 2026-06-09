@@ -16,8 +16,10 @@ let users = [
 ]
 
 let vipCodes = [
-  { id: 1, code: 'VIP-A1B2C3D4', status: 0, createdBy: 1, usedBy: null, createdAt: '2026-06-09T08:00:00', expiresAt: '2026-06-16T08:00:00', usedAt: null }
+  { id: 1, code: 'VIP-A1B2C3D4', status: 0, createdBy: 1, usedBy: null, vipDays: 30, source: 'ADMIN', createdAt: '2026-06-09T08:00:00', expiresAt: '2026-06-16T08:00:00', usedAt: null }
 ]
+
+let checkinDates = createRecentDateKeys(29)
 
 let aiConfig = {
   provider: 'DEFAULT',
@@ -114,11 +116,14 @@ function routeMock(method, path, config) {
     const body = parseBody(config.data)
     const isAdmin = body.username?.toLowerCase().includes('admin')
     const isVip = body.username?.toLowerCase().includes('vip')
+    const user = users.find((item) => item.id === (isAdmin ? 1 : isVip ? 2 : 3)) || users[2]
     return {
       token: isAdmin ? 'frontend-admin-demo-token' : 'frontend-user-demo-token',
-      userId: isAdmin ? 1 : isVip ? 2 : 3,
-      username: body.username || (isAdmin ? 'admin_preview' : isVip ? 'lin_xiaoyu' : 'chen_ming'),
-      role: isAdmin ? 'ADMIN' : isVip ? 'VIP' : 'USER'
+      userId: user.id,
+      username: body.username || user.username,
+      role: user.role,
+      status: user.status,
+      vipExpireTime: user.vipExpireTime
     }
   }
 
@@ -133,7 +138,7 @@ function routeMock(method, path, config) {
   }
 
   if (method === 'get' && path === '/user/current') {
-    return users[2]
+    return getCurrentUser()
   }
 
   if (method === 'get' && path === '/profile') {
@@ -147,6 +152,38 @@ function routeMock(method, path, config) {
 
   if (method === 'get' && path === '/weight/history') {
     return weightRecords
+  }
+
+  if (method === 'get' && path === '/checkin/status') {
+    return createCheckinStatus()
+  }
+
+  if (method === 'post' && path === '/checkin/today') {
+    const today = formatDateKey(new Date())
+    if (!checkinDates.includes(today)) {
+      checkinDates = [...checkinDates, today]
+    }
+    const status = createCheckinStatus()
+    if (status.totalDays % 30 === 0) {
+      const code = `VIP-CHK${String(Date.now()).slice(-5)}`
+      vipCodes = [
+        {
+          id: Date.now(),
+          code,
+          status: 0,
+          createdBy: getCurrentUser().userId,
+          usedBy: null,
+          vipDays: 7,
+          source: 'CHECKIN_REWARD',
+          createdAt: new Date().toISOString().slice(0, 19),
+          expiresAt: getFutureTime(7),
+          usedAt: null
+        },
+        ...vipCodes
+      ]
+      status.rewardCode = code
+    }
+    return status
   }
 
   if (method === 'get' && path === '/weight/trend') {
@@ -189,6 +226,9 @@ function routeMock(method, path, config) {
     code.status = 1
     code.usedBy = 3
     code.usedAt = new Date().toISOString().slice(0, 19)
+    users = users.map((item) =>
+      item.id === 3 ? { ...item, role: 'VIP', vipExpireTime: '2026-07-09T00:00:00' } : item
+    )
     return { userId: 3, username: 'chen_ming', role: 'VIP', status: 1, vipExpireTime: '2026-07-09T00:00:00' }
   }
 
@@ -304,7 +344,7 @@ function routeMock(method, path, config) {
     const codes = Array.from({ length: count }, (_, index) => {
       const code = `VIP-DEMO${String(Date.now() + index).slice(-4)}`
       vipCodes = [
-        { id: Date.now() + index, code, status: 0, createdBy: 1, usedBy: null, createdAt: new Date().toISOString().slice(0, 19), expiresAt: '2026-06-16T08:00:00', usedAt: null },
+        { id: Date.now() + index, code, status: 0, createdBy: 1, usedBy: null, vipDays: 30, source: 'ADMIN', createdAt: new Date().toISOString().slice(0, 19), expiresAt: getFutureTime(7), usedAt: null },
         ...vipCodes
       ]
       return code
@@ -563,11 +603,64 @@ function createExercise(day, type, duration, intensity, items, note) {
 }
 
 function getCurrentRole() {
+  return getCurrentUser().role || 'USER'
+}
+
+function getCurrentUser() {
   try {
-    return JSON.parse(window.localStorage.getItem('smart_health_user') || '{}').role || 'USER'
+    const stored = JSON.parse(window.localStorage.getItem('smart_health_user') || '{}')
+    const userId = stored.userId || stored.id
+    const matched = users.find((item) => item.id === userId) || users.find((item) => item.role === stored.role)
+    return matched ? { ...matched, userId: matched.id, username: stored.username || matched.username } : { ...users[2], userId: users[2].id }
   } catch {
-    return 'USER'
+    return { ...users[2], userId: users[2].id }
   }
+}
+
+function createCheckinStatus() {
+  const keys = [...new Set(checkinDates)].sort()
+  const totalDays = keys.length
+  return {
+    dates: keys,
+    totalDays,
+    currentStreak: countCheckinStreak(keys),
+    checkedToday: keys.includes(formatDateKey(new Date())),
+    nextRewardRemainingDays: 30 - (totalDays % 30),
+    rewardCode: ''
+  }
+}
+
+function countCheckinStreak(keys) {
+  const dates = new Set(keys)
+  const date = new Date()
+  let streak = 0
+  while (dates.has(formatDateKey(date))) {
+    streak += 1
+    date.setDate(date.getDate() - 1)
+  }
+  return streak
+}
+
+function createRecentDateKeys(count) {
+  const today = new Date()
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(today)
+    date.setDate(today.getDate() - count + index)
+    return formatDateKey(date)
+  })
+}
+
+function formatDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getFutureTime(days) {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 19)
 }
 
 function updateUserStatus(id, status) {

@@ -27,7 +27,7 @@
     <article v-else class="plan-result">
       <div class="result-heading">
         <div>
-          <p>{{ plan.planLevel }} / {{ plan.planType }}</p>
+          <p>{{ planLevelText }} / {{ planTypeText }}</p>
           <h3>本次个性化计划</h3>
         </div>
         <span>{{ formatTime(plan.createTime) }}</span>
@@ -39,14 +39,14 @@
         <div class="track-heading">
           <span class="track-icon"><ForkSpoon /></span>
           <div>
-            <p>Nutrition</p>
+            <p>饮食</p>
             <h4>饮食计划</h4>
           </div>
         </div>
         <div class="track-heading exercise-track">
           <span class="track-icon"><Bicycle /></span>
           <div>
-            <p>Training</p>
+            <p>运动</p>
             <h4>运动计划</h4>
           </div>
         </div>
@@ -149,7 +149,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Bicycle, Collection, ForkSpoon, Medal } from '@element-plus/icons-vue'
-import { generatePlan, getGenerateCount, normalizeGenerateCount } from '../api/modules/plan'
+import {
+  formatPlanLevel,
+  formatPlanType,
+  generatePlan,
+  getGenerateCount,
+  normalizeGenerateCount,
+  normalizePlanDetail
+} from '../api/modules/plan'
 import { getUser } from '../utils/auth'
 
 const generating = ref(false)
@@ -164,9 +171,12 @@ const countText = computed(() => {
   }
   return `${count.value.used}/${count.value.limit}，剩余 ${count.value.remaining}`
 })
-const dietPlan = computed(() => plan.value?.planContent?.dietPlan || [])
-const exercisePlan = computed(() => plan.value?.planContent?.exercisePlan || [])
-const vipDetail = computed(() => (isVip.value ? plan.value?.planContent?.vipDetail : undefined))
+const planContent = computed(() => plan.value?.planContent || {})
+const planLevelText = computed(() => formatPlanLevel(plan.value?.planLevel))
+const planTypeText = computed(() => formatPlanType(plan.value?.planType))
+const dietPlan = computed(() => planContent.value.dietPlan || [])
+const exercisePlan = computed(() => planContent.value.exercisePlan || [])
+const vipDetail = computed(() => (isVip.value ? planContent.value.vipDetail : undefined))
 const references = computed(() => plan.value?.references || [])
 const weeklyPlans = computed(() => {
   const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
@@ -218,7 +228,7 @@ async function loadCount() {
 async function generate() {
   generating.value = true
   try {
-    plan.value = await generatePlan()
+    plan.value = normalizePlanDetail(await generatePlan())
     ElMessage.success('AI 计划已生成')
     await loadCount()
   } finally {

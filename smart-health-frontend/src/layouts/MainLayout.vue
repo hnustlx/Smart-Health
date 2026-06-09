@@ -2,10 +2,10 @@
   <el-container class="app-shell">
     <el-aside class="app-sidebar" width="236px">
       <div class="brand">
-        <div class="brand-mark">SH</div>
+        <img class="brand-mark" :src="qingyaMark" alt="青芽" />
         <div>
-          <h1>Smart Health</h1>
-          <p>智能健康助手</p>
+          <h1>青芽</h1>
+          <p>青芽健康助手</p>
         </div>
       </div>
 
@@ -27,7 +27,7 @@
       </el-menu>
 
       <div class="sidebar-status">
-        <span>MEMBERSHIP</span>
+        <span>会员状态</span>
         <strong>{{ roleLabel }}</strong>
         <small>{{ user?.role === 'VIP' ? '已解锁进阶健康能力' : '升级后解锁更多能力' }}</small>
       </div>
@@ -53,6 +53,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { gsap } from 'gsap'
 import { clearAuth, getUser } from '../utils/auth'
+import qingyaMark from '../assets/qingya-mark.svg'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,7 +79,7 @@ const roleNames = {
   ADMIN: '管理员'
 }
 
-const pageTitle = computed(() => titles[route.path] || 'Smart Health')
+const pageTitle = computed(() => titles[route.path] || '青芽')
 const roleLabel = computed(() => roleNames[user.value?.role] || '未识别角色')
 
 function logout() {

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smarthealth.mapper.DailyCheckinMapper">
+
+    <resultMap id="checkinMap" type="com.smarthealth.entity.DailyCheckin">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="checkinDate" column="checkin_date"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO daily_checkin (user_id, checkin_date)
+        VALUES (#{userId}, #{checkinDate})
+    </insert>
+
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*) FROM daily_checkin WHERE user_id = #{userId}
+    </select>
+
+    <select id="countByUserIdAndDate" resultType="int">
+        SELECT COUNT(*) FROM daily_checkin
+        WHERE user_id = #{userId} AND checkin_date = #{checkinDate}
+    </select>
+
+    <select id="findRecentByUserId" resultMap="checkinMap">
+        SELECT * FROM daily_checkin
+        WHERE user_id = #{userId}
+        ORDER BY checkin_date DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

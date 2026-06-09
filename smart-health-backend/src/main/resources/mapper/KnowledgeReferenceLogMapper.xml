@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smarthealth.mapper.KnowledgeReferenceLogMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO knowledge_reference_log
+        (knowledge_id, knowledge_title, knowledge_category, source_type, user_id)
+        VALUES
+        (#{knowledgeId}, #{knowledgeTitle}, #{knowledgeCategory}, #{sourceType}, #{userId})
+    </insert>
+
+    <select id="countSince" resultType="long">
+        SELECT COUNT(*)
+        FROM knowledge_reference_log
+        WHERE create_time &gt;= #{startTime}
+    </select>
+
+    <select id="findTopKnowledge" resultType="com.smarthealth.dto.response.DashboardTopKnowledgeResponse">
+        SELECT
+            knowledge_id AS knowledgeId,
+            COALESCE(MAX(knowledge_title), knowledge_id) AS title,
+            MAX(knowledge_category) AS category,
+            COUNT(*) AS referenceCount,
+            MAX(create_time) AS lastReferencedTime
+        FROM knowledge_reference_log
+        WHERE create_time &gt;= #{startTime}
+        GROUP BY knowledge_id
+        ORDER BY referenceCount DESC, lastReferencedTime DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

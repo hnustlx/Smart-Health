@@ -20,8 +20,8 @@
     <section ref="loginCard" class="auth-card login-card">
       <div ref="cardContent" class="auth-card-content">
         <div class="auth-brand-row">
-          <span class="auth-logo">SH</span>
-          <p class="eyebrow">智能健康助手</p>
+          <img class="auth-logo" :src="qingyaMark" alt="青芽" />
+          <p class="eyebrow">青芽健康助手</p>
         </div>
         <h1>
           <span>进入你的</span>
@@ -77,6 +77,7 @@ import { gsap } from 'gsap'
 import HealthAssistant from '../components/HealthAssistant.vue'
 import { login } from '../api/modules/auth'
 import { setToken, setUser } from '../utils/auth'
+import qingyaMark from '../assets/qingya-mark.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -195,7 +196,9 @@ async function submit() {
     setUser({
       userId: user.userId,
       username: user.username,
-      role: user.role
+      role: user.role,
+      status: user.status,
+      vipExpireTime: user.vipExpireTime
     })
     statusText.value = '正在准备个性化计划'
     await playSuccessTransition()
@@ -217,7 +220,9 @@ async function previewLogin() {
     setUser({
       userId: 0,
       username: '体验用户',
-      role: 'USER'
+      role: 'USER',
+      status: 1,
+      vipExpireTime: ''
     })
     sessionStorage.removeItem('vip_preview_enabled')
     statusText.value = '正在准备健康工作台'

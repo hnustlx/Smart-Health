@@ -15,6 +15,10 @@ const request = axios.create({
   adapter: useMockData ? mockAdapter : undefined
 })
 
+function getLoginPath() {
+  return router.currentRoute.value.path.startsWith('/admin') ? '/admin/login' : '/login'
+}
+
 request.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {
@@ -35,7 +39,7 @@ request.interceptors.response.use(
     if (body.code === 401) {
       clearAuth()
       ElMessage.warning(body.message || '登录已失效，请重新登录')
-      router.push('/login')
+      router.push(getLoginPath())
       return Promise.reject(body)
     }
     ElMessage.error(body.message || '请求失败')
@@ -47,7 +51,7 @@ request.interceptors.response.use(
     if (status === 401) {
       clearAuth()
       ElMessage.warning('登录已失效，请重新登录')
-      router.push('/login')
+      router.push(getLoginPath())
     } else {
       ElMessage.error(message)
     }

@@ -20,6 +20,14 @@
         SELECT * FROM plan WHERE user_id = #{userId} ORDER BY create_time DESC
     </select>
 
+    <select id="countCreatedSince" resultType="long">
+        SELECT COUNT(*) FROM plan WHERE create_time &gt;= #{startTime}
+    </select>
+
+    <select id="countByLevelSince" resultType="long">
+        SELECT COUNT(*) FROM plan WHERE plan_level = #{planLevel} AND create_time &gt;= #{startTime}
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO plan (user_id, plan_type, plan_level, plan_content, trend_summary)
         VALUES (#{userId}, #{planType}, #{planLevel}, #{planContent}, #{trendSummary})

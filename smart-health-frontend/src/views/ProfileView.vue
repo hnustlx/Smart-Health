@@ -197,6 +197,9 @@ async function loadProfile() {
       goal: profile.goal
     })
     profileExists.value = true
+    profileCompleted.value = true
+    showProfile.value = true
+    activeStep.value = steps.length - 1
   } catch (error) {
     if (error.response?.status !== 404 && error.code !== 404) {
       console.warn(error)
@@ -219,7 +222,7 @@ async function submit() {
       ElMessage.success('健康档案已创建')
     }
     profileCompleted.value = true
-    showProfile.value = false
+    showProfile.value = true
   } finally {
     saving.value = false
   }

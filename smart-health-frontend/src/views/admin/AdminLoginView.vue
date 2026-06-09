@@ -2,7 +2,7 @@
   <main class="admin-login-page">
     <section class="admin-login-panel">
       <div class="admin-login-copy">
-        <span>Smart Health Admin</span>
+        <span>青芽 Admin</span>
         <h1>后台管理入口</h1>
         <p>用于管理用户、计划记录与健康知识库。</p>
       </div>
@@ -72,7 +72,9 @@ async function submit() {
     setUser({
       userId: user.userId,
       username: user.username,
-      role: user.role
+      role: user.role,
+      status: user.status,
+      vipExpireTime: user.vipExpireTime
     })
     ElMessage.success('管理员登录成功')
     router.push(route.query.redirect || '/admin')
@@ -86,7 +88,9 @@ function previewLogin() {
   setUser({
     userId: 1,
     username: 'admin_preview',
-    role: 'ADMIN'
+    role: 'ADMIN',
+    status: 1,
+    vipExpireTime: '2027-01-01 00:00:00'
   })
   ElMessage.success('已进入管理员体验账号')
   router.push(route.query.redirect || '/admin')
