@@ -39,7 +39,7 @@
           <strong>{{ pageTitle }}</strong>
           <span>{{ roleLabel }}</span>
         </div>
-        <el-button type="primary" plain @click="logout">退出登录</el-button>
+        <el-button class="logout-button" plain @click="logout">退出登录</el-button>
       </el-header>
       <el-main class="app-main">
         <router-view />

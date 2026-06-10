@@ -80,7 +80,7 @@
                 <ul v-if="item.diet.calorie.foods?.length" class="calorie-food-list">
                   <li v-for="food in item.diet.calorie.foods" :key="`${item.day}-${food.name}`">
                     <span>{{ food.name }}</span>
-                    <strong>{{ food.kcal }}</strong>
+                    <strong>{{ formatCalorie(food.kcal) }}</strong>
                   </li>
                 </ul>
                 <p>{{ item.diet.calorie.advice }}</p>
@@ -238,5 +238,14 @@ async function generate() {
 
 function formatTime(value) {
   return value ? value.replace('T', ' ') : ''
+}
+
+function formatCalorie(value) {
+  if (value === undefined || value === null || value === '') {
+    return ''
+  }
+
+  const text = String(value).trim()
+  return /kcal|千卡|大卡/i.test(text) ? text : `${text} kcal`
 }
 </script>

@@ -171,17 +171,33 @@ async function playSuccessTransition() {
   const assistantEl = assistantRef.value?.getRootEl()
   await gsap
     .timeline({ defaults: { ease: 'power4.inOut' } })
-    .to(pulseBackdrop.value, { autoAlpha: 0, filter: 'blur(10px)', duration: 0.18, ease: 'power2.out' })
-    .to(loginCard.value, { y: -16, autoAlpha: 0, scale: 0.96, duration: 0.34, ease: 'power2.in' }, '<0.02')
-    .to(assistantEl, { top: '44%', left: '43%', width: '190px', duration: 0.58, ease: 'power3.inOut' }, '-=0.08')
+    .to(pulseBackdrop.value, { autoAlpha: 0.36, filter: 'blur(4px)', duration: 0.2, ease: 'power2.out' })
+    .to(loginCard.value, { y: -18, autoAlpha: 0, scale: 0.97, duration: 0.32, ease: 'power2.in' }, '<0.02')
+    .to(assistantEl, { top: '44%', left: '43%', width: '190px', duration: 0.5, ease: 'power3.inOut' }, '-=0.08')
   await assistantRef.value?.playKnock()
   await gsap
-    .timeline({ defaults: { ease: 'power4.inOut' } })
+    .timeline({ defaults: { ease: 'power3.inOut' } })
     .fromTo(doorSpark.value, { autoAlpha: 0, scale: 0.56 }, { autoAlpha: 1, scale: 1.18, duration: 0.18, ease: 'power2.out' })
-    .to(doorSpark.value, { autoAlpha: 0, scale: 1.7, duration: 0.24, ease: 'power2.out' })
-    .to(assistantEl, { x: -34, autoAlpha: 0, scale: 0.7, duration: 0.26, ease: 'power2.in' }, '<0.02')
-    .to(leftDoor.value, { xPercent: -112, duration: 0.78 }, '<0.04')
-    .to(rightDoor.value, { xPercent: 112, duration: 0.78 }, '<')
+    .to(doorSpark.value, { autoAlpha: 0, scale: 1.65, duration: 0.22, ease: 'power2.out' })
+    .to(pulseBackdrop.value, { autoAlpha: 0, filter: 'blur(10px)', duration: 0.34, ease: 'power2.out' }, '<')
+    .to(assistantEl, { x: -42, autoAlpha: 0, scale: 0.72, duration: 0.24, ease: 'power2.in' }, '<0.02')
+}
+
+async function enterHomeWithTransition(target) {
+  if (isHomeTarget(target)) {
+    sessionStorage.setItem('login_home_transition', '1')
+  } else {
+    sessionStorage.removeItem('login_home_transition')
+  }
+  await playSuccessTransition()
+  await router.push(target)
+}
+
+function isHomeTarget(target) {
+  if (typeof target !== 'string') {
+    return false
+  }
+  return target === '/home' || target.startsWith('/home?') || target.startsWith('/home#')
 }
 
 async function submit() {
@@ -201,9 +217,8 @@ async function submit() {
       vipExpireTime: user.vipExpireTime
     })
     statusText.value = '正在准备个性化计划'
-    await playSuccessTransition()
+    await enterHomeWithTransition(route.query.redirect || '/home')
     ElMessage.success('登录成功')
-    router.push(route.query.redirect || '/home')
   } finally {
     loading.value = false
     assistantState.value = 'idle'
@@ -226,8 +241,7 @@ async function previewLogin() {
     })
     sessionStorage.removeItem('vip_preview_enabled')
     statusText.value = '正在准备健康工作台'
-    await playSuccessTransition()
-    router.push(route.query.redirect || '/home')
+    await enterHomeWithTransition(route.query.redirect || '/home')
   } finally {
     loading.value = false
     assistantState.value = 'idle'

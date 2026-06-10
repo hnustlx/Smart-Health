@@ -1,6 +1,15 @@
 <template>
   <section ref="homeRoot" class="home-page">
+    <div ref="homeRevealDoor" class="home-reveal-door" aria-hidden="true">
+      <div ref="homeRevealLeftDoor" class="home-reveal-door-panel home-reveal-door-panel--left"></div>
+      <div ref="homeRevealRightDoor" class="home-reveal-door-panel home-reveal-door-panel--right"></div>
+    </div>
     <div class="home-hero home-animate">
+      <img
+        class="home-hero-image"
+        src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=82"
+        alt=""
+      />
       <div class="home-hero-copy">
         <p class="home-kicker">今日健康概览</p>
         <h1>欢迎回来，{{ displayName }}</h1>
@@ -22,16 +31,19 @@
 
     <div class="home-summary">
       <div class="summary-card home-animate">
+        <span class="summary-card-icon" aria-hidden="true">🥗</span>
         <span>健康档案</span>
         <strong>{{ profileStatus }}</strong>
         <small>{{ profileSummary }}</small>
       </div>
       <div class="summary-card home-animate">
+        <span class="summary-card-icon" aria-hidden="true">⚖️</span>
         <span>体重记录</span>
         <strong>{{ weightStatus }}</strong>
         <small>{{ weightSummary }}</small>
       </div>
       <div class="summary-card home-animate">
+        <span class="summary-card-icon" aria-hidden="true">💬</span>
         <span>VIP 问答</span>
         <strong>{{ vipStatus }}</strong>
         <small>{{ vipSummary }}</small>
@@ -195,6 +207,9 @@ const checkingIn = ref(false)
 const latestRewardCode = ref('')
 const homeRoot = ref()
 const trendPath = ref()
+const homeRevealDoor = ref()
+const homeRevealLeftDoor = ref()
+const homeRevealRightDoor = ref()
 let ctx
 let reduceMotion = false
 
@@ -486,10 +501,9 @@ function formatShortDate(value) {
 
 function animateHome() {
   ctx = gsap.context(() => {
-    gsap
-      .timeline({ defaults: { ease: 'power3.out' } })
-      .from('.home-animate', { autoAlpha: 0, y: 24, duration: 0.62, stagger: 0.07 })
-      .from('.trend-dots circle', { autoAlpha: 0, scale: 0.4, transformOrigin: 'center', stagger: 0.08, duration: 0.32 }, '-=0.38')
+    const fromLogin = sessionStorage.getItem('login_home_transition') === '1'
+    sessionStorage.removeItem('login_home_transition')
+    fromLogin ? animateLoginHomeEntry() : animateDefaultHomeEntry()
 
     gsap.to('.home-primary-action', {
       y: -3,
@@ -500,6 +514,44 @@ function animateHome() {
     })
   }, homeRoot.value)
   animateTrend()
+}
+
+function animateDefaultHomeEntry() {
+  return gsap
+    .timeline({ defaults: { ease: 'power3.out' } })
+    .from('.home-animate', { autoAlpha: 0, y: 24, duration: 0.62, stagger: 0.07 })
+    .from('.trend-dots circle', { autoAlpha: 0, scale: 0.4, transformOrigin: 'center', stagger: 0.08, duration: 0.32 }, '-=0.38')
+}
+
+function animateLoginHomeEntry() {
+  const doorOpenVars = getDoorOpenVars()
+  const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
+  gsap.set(homeRevealDoor.value, { autoAlpha: 1 })
+  gsap.set([homeRevealLeftDoor.value, homeRevealRightDoor.value], { xPercent: 0, yPercent: 0 })
+  gsap.set('.home-animate', { autoAlpha: 1, y: 0, scale: 1 })
+
+  timeline
+    .from('.home-hero-image', { scale: 1.04, duration: 0.82, ease: 'power2.out' }, 0)
+    .to(homeRevealLeftDoor.value, { ...doorOpenVars.left, duration: 0.82, ease: 'power3.inOut' }, 0)
+    .to(homeRevealRightDoor.value, { ...doorOpenVars.right, duration: 0.82, ease: 'power3.inOut' }, 0)
+    .from('.home-hero-copy > *, .home-hero-panel', { autoAlpha: 0.72, y: 4, duration: 0.24, stagger: 0.025 }, 0.1)
+    .from('.trend-dots circle', { autoAlpha: 0, scale: 0.4, transformOrigin: 'center', stagger: 0.08, duration: 0.3 }, 0.58)
+    .set(homeRevealDoor.value, { autoAlpha: 0 })
+
+  return timeline
+}
+
+function getDoorOpenVars() {
+  if (window.matchMedia('(max-width: 860px)').matches) {
+    return {
+      left: { yPercent: -112, xPercent: 0 },
+      right: { yPercent: 112, xPercent: 0 }
+    }
+  }
+  return {
+    left: { xPercent: -112, yPercent: 0 },
+    right: { xPercent: 112, yPercent: 0 }
+  }
 }
 
 function animateTrend() {
