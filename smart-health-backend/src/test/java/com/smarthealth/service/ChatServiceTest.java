@@ -27,6 +27,9 @@ class ChatServiceTest {
     @Mock
     private AiRoutingService aiRoutingService;
 
+    @Mock
+    private KnowledgeReferenceService knowledgeReferenceService;
+
     @InjectMocks
     private ChatService chatService;
 
@@ -54,6 +57,12 @@ class ChatServiceTest {
         assertTrue(response.getAnswer().contains("减脂"));
         assertEquals(1, response.getReferences().size());
         assertEquals("减脂指南", response.getReferences().get(0).getTitle());
+        verify(aiRoutingService).chat(anyLong(), anyString(),
+                contains(String.valueOf(java.time.LocalDate.now(java.time.ZoneId.of("Asia/Shanghai")).getYear())),
+                anyString());
+        verify(aiRoutingService).chat(anyLong(), anyString(),
+                contains("暂未接入实时查询能力"),
+                anyString());
     }
 
     @Test

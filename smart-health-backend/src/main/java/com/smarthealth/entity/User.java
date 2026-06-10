@@ -12,6 +12,7 @@ public class User {
     private String role;
     private Integer status;
     private LocalDateTime vipExpireTime;
+    private LocalDateTime lastActiveTime;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

@@ -8,14 +8,16 @@
         <result property="status" column="status"/>
         <result property="usedBy" column="used_by"/>
         <result property="createdBy" column="created_by"/>
+        <result property="vipDays" column="vip_days"/>
+        <result property="source" column="source"/>
         <result property="createdAt" column="created_at"/>
         <result property="expiresAt" column="expires_at"/>
         <result property="usedAt" column="used_at"/>
     </resultMap>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO vip_activation_code (code, status, created_by, created_at, expires_at)
-        VALUES (#{code}, 0, #{createdBy}, #{createdAt}, #{expiresAt})
+        INSERT INTO vip_activation_code (code, status, created_by, vip_days, source, created_at, expires_at)
+        VALUES (#{code}, 0, #{createdBy}, #{vipDays}, #{source}, #{createdAt}, #{expiresAt})
     </insert>
 
     <select id="findByCode" resultMap="codeMap">

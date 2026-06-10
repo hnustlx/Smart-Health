@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,9 +21,11 @@ import java.util.stream.Collectors;
 public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("Asia/Shanghai");
 
     private final RagService ragService;
     private final AiRoutingService aiRoutingService;
+    private final KnowledgeReferenceService knowledgeReferenceService;
 
     public ChatResponse askQuestion(Long userId, String role, ChatRequest request) {
         if (!"VIP".equals(role)) {
@@ -35,6 +39,7 @@ public class ChatService {
             log.warn("Chroma unavailable, falling back to AI-only Q&A", e);
             ragResults = List.of();
         }
+        knowledgeReferenceService.recordReferences(ragResults, userId, "CHAT");
 
         String context = "";
         if (ragResults != null && !ragResults.isEmpty()) {
@@ -43,9 +48,10 @@ public class ChatService {
                     .collect(Collectors.joining("\n"));
         }
 
-        String systemPrompt = "你是一个专业的健康管理助手。请基于以下参考知识回答用户问题。"
+        String systemPrompt = "你是一个专业的健康管理助手。当前日期是" + todayText() + "。请基于以下参考知识回答用户问题。"
                 + "回答要清晰、简洁、可执行。"
                 + "不提供疾病诊断或治疗结论。"
+                + "如果用户询问天气、新闻、股票等实时外部信息，必须说明系统暂未接入实时查询能力，不能编造具体数据。"
                 + "涉及疾病、疼痛、药物或严重不适时，提醒用户咨询医生。"
                 + "回答末尾加上'本回答仅供健康管理参考，不能替代专业医疗建议。'";
 
@@ -65,5 +71,23 @@ public class ChatService {
                 .collect(Collectors.toList());
 
         return new ChatResponse(answer, references);
+    }
+
+    private String todayText() {
+        LocalDate today = LocalDate.now(DEFAULT_ZONE);
+        return String.format("%d年%d月%d日，%s",
+                today.getYear(), today.getMonthValue(), today.getDayOfMonth(), weekday(today));
+    }
+
+    private String weekday(LocalDate date) {
+        return switch (date.getDayOfWeek()) {
+            case MONDAY -> "星期一";
+            case TUESDAY -> "星期二";
+            case WEDNESDAY -> "星期三";
+            case THURSDAY -> "星期四";
+            case FRIDAY -> "星期五";
+            case SATURDAY -> "星期六";
+            case SUNDAY -> "星期日";
+        };
     }
 }

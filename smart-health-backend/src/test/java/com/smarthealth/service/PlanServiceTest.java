@@ -48,6 +48,9 @@ class PlanServiceTest {
     private RagService ragService;
 
     @Mock
+    private KnowledgeReferenceService knowledgeReferenceService;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     @InjectMocks

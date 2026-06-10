@@ -1,0 +1,74 @@
+<svg width="720" height="240" viewBox="0 0 720 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">青芽 logo</title>
+  <desc id="desc">A friendly green leaf health assistant mascot with the name Qingya.</desc>
+  <defs>
+    <linearGradient id="markBg" x1="24" y1="24" x2="216" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECFDF5"/>
+      <stop offset="1" stop-color="#CFF7DE"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="77" y1="24" x2="154" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BBF7D0"/>
+      <stop offset="0.44" stop-color="#4ADE80"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="54" y1="68" x2="185" y2="198" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EE4A4"/>
+      <stop offset="0.52" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(106 98) rotate(55) scale(103 98)">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.74" stop-color="#FFFDF7"/>
+      <stop offset="1" stop-color="#F8F0DF"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(84 126) scale(18 20)">
+      <stop stop-color="#50665F"/>
+      <stop offset="0.4" stop-color="#20352F"/>
+      <stop offset="1" stop-color="#101C19"/>
+    </radialGradient>
+    <filter id="shadow" x="0" y="0" width="240" height="240" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="17" flood-color="#064E3B" flood-opacity="0.18"/>
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#10B981" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <rect width="720" height="240" rx="28" fill="#F7FBF8"/>
+  <g filter="url(#shadow)">
+    <rect x="28" y="28" width="184" height="184" rx="40" fill="url(#markBg)"/>
+    <ellipse cx="120" cy="190" rx="63" ry="16" fill="#064E3B" opacity="0.1"/>
+
+    <path d="M120 52C132 25 166 18 189 36C171 59 148 69 124 90C98 69 76 60 57 37C79 18 108 25 120 52Z" fill="url(#leaf)"/>
+    <path d="M124 90C124 75 123 61 120 52" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.62"/>
+    <path d="M107 68C93 58 80 50 63 40" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.46"/>
+    <path d="M139 68C153 57 167 49 183 38" stroke="#ECFDF5" stroke-width="4" stroke-linecap="round" opacity="0.46"/>
+
+    <path d="M58 107C72 67 97 52 120 56C145 52 174 68 184 107C164 93 141 88 120 91C96 88 77 93 58 107Z" fill="#0F9F74" opacity="0.34"/>
+    <circle cx="120" cy="126" r="74" fill="url(#ring)"/>
+    <circle cx="120" cy="132" r="56" fill="url(#face)"/>
+    <path d="M82 105C94 82 108 76 120 77C136 76 153 84 161 105" stroke="#E7FFF1" stroke-width="6" stroke-linecap="round" opacity="0.36"/>
+
+    <ellipse cx="98" cy="130" rx="10" ry="12" fill="url(#eye)"/>
+    <ellipse cx="142" cy="130" rx="10" ry="12" fill="url(#eye)"/>
+    <circle cx="94" cy="125" r="3.5" fill="#FFFFFF"/>
+    <circle cx="138" cy="125" r="3.5" fill="#FFFFFF"/>
+    <path d="M88 113C96 108 103 109 109 114" stroke="#047857" stroke-width="3.5" stroke-linecap="round" opacity="0.24"/>
+    <path d="M132 114C138 109 145 108 153 113" stroke="#047857" stroke-width="3.5" stroke-linecap="round" opacity="0.24"/>
+    <ellipse cx="84" cy="151" rx="15" ry="10" fill="#FB7185" opacity="0.3"/>
+    <ellipse cx="156" cy="151" rx="15" ry="10" fill="#FB7185" opacity="0.3"/>
+    <path d="M108 154C115 162 135 162 142 154" stroke="#17352D" stroke-width="4.5" stroke-linecap="round"/>
+
+    <circle cx="61" cy="145" r="17" fill="#DFF7EA" stroke="#10B981" stroke-width="5"/>
+    <circle cx="179" cy="145" r="17" fill="#DFF7EA" stroke="#10B981" stroke-width="5"/>
+    <path d="M55 139C61 136 67 136 73 139" stroke="#047857" stroke-width="2.6" stroke-linecap="round" opacity="0.22"/>
+    <path d="M173 139C179 136 185 136 191 139" stroke="#047857" stroke-width="2.6" stroke-linecap="round" opacity="0.22"/>
+
+    <path d="M66 190H95L105 173L118 203L132 179L142 190H171" stroke="#FF5C8A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g>
+    <text x="256" y="112" fill="#13231F" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="0">青芽</text>
+    <text x="258" y="152" fill="#0F766E" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="0">SMART HEALTH ASSISTANT</text>
+    <path d="M258 177H398L412 154L431 197L451 167L466 177H570" stroke="#FF5C8A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="258" y="211" fill="#667085" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="0">饮食计划 · 运动建议 · 体重趋势</text>
+  </g>
+</svg>

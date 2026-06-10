@@ -31,6 +31,7 @@ public class PlanService {
     private final WeightService weightService;
     private final AiRoutingService aiRoutingService;
     private final RagService ragService;
+    private final KnowledgeReferenceService knowledgeReferenceService;
     private final ObjectMapper objectMapper;
 
     private static final Logger log = LoggerFactory.getLogger(PlanService.class);
@@ -57,19 +58,14 @@ public class PlanService {
             log.warn("Chroma unavailable, falling back to AI-only generation", e);
             ragResults = List.of();
         }
+        knowledgeReferenceService.recordReferences(ragResults, userId, "PLAN");
 
         String userPrompt = buildUserPrompt(profile, trendSummary, ragResults);
         String systemPrompt = buildSystemPrompt(role);
 
         String aiResponse = aiRoutingService.chat(userId, role, systemPrompt, userPrompt);
 
-        Map<String, Object> planContent;
-        try {
-            planContent = objectMapper.readValue(aiResponse,
-                    new TypeReference<Map<String, Object>>() {});
-        } catch (Exception e) {
-            planContent = Map.of("raw", aiResponse);
-        }
+        Map<String, Object> planContent = parsePlanContent(aiResponse);
 
         String planLevel = "VIP".equals(role) ? "VIP" : "BASIC";
 
@@ -77,7 +73,7 @@ public class PlanService {
         plan.setUserId(userId);
         plan.setPlanType("COMBINED");
         plan.setPlanLevel(planLevel);
-        plan.setPlanContent(aiResponse);
+        plan.setPlanContent(toPlanContentText(planContent, aiResponse));
         plan.setTrendSummary(trendSummary);
         planMapper.insert(plan);
         if (plan.getCreateTime() == null) {
@@ -115,13 +111,7 @@ public class PlanService {
             throw new BusinessException(ResultCode.FORBIDDEN, "无权限查看该计划");
         }
 
-        Map<String, Object> planContent;
-        try {
-            planContent = objectMapper.readValue(plan.getPlanContent(),
-                    new TypeReference<Map<String, Object>>() {});
-        } catch (Exception e) {
-            planContent = Map.of("raw", plan.getPlanContent());
-        }
+        Map<String, Object> planContent = parsePlanContent(plan.getPlanContent());
 
         return toDetailResponse(plan, planContent, List.of());
     }
@@ -152,6 +142,44 @@ public class PlanService {
 
     private void incrementGenerateCount(Long userId) {
         generateRecordMapper.upsertCount(userId, LocalDate.now());
+    }
+
+    private Map<String, Object> parsePlanContent(String content) {
+        if (content == null || content.isBlank()) {
+            return Map.of();
+        }
+
+        String text = content.trim();
+        List<String> candidates = new ArrayList<>();
+        candidates.add(text);
+        candidates.add(text.replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""));
+
+        int start = text.indexOf('{');
+        int end = text.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            candidates.add(text.substring(start, end + 1));
+        }
+
+        for (String candidate : candidates) {
+            try {
+                Map<String, Object> parsed = objectMapper.readValue(candidate,
+                        new TypeReference<Map<String, Object>>() {});
+                if (parsed != null) {
+                    return parsed;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return Map.of("raw", content);
+    }
+
+    private String toPlanContentText(Map<String, Object> planContent, String fallback) {
+        try {
+            return objectMapper.writeValueAsString(planContent);
+        } catch (Exception e) {
+            return fallback;
+        }
     }
 
     private String buildSystemPrompt(String role) {

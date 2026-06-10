@@ -4,6 +4,7 @@ import com.smarthealth.config.DeepSeekConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,6 +51,42 @@ class DeepSeekAiServiceTest {
         String result = deepSeekAiService.chat("system prompt", "user prompt");
 
         assertEquals("{\"dietPlan\":[]}", result);
+    }
+
+    @Test
+    void chat_shouldNotRequestJsonFormat_whenPromptDoesNotRequireJson() {
+        Map<String, Object> responseBody = Map.of(
+                "choices", List.of(
+                        Map.of("message", Map.of("content", "健康问答回复"))
+                )
+        );
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        String result = deepSeekAiService.chat("system prompt", "user prompt");
+
+        assertEquals("健康问答回复", result);
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(deepSeekRestTemplate).postForEntity(anyString(), captor.capture(), eq(Map.class));
+        assertFalse(((Map<?, ?>) captor.getValue().getBody()).containsKey("response_format"));
+    }
+
+    @Test
+    void chat_shouldRequestJsonFormat_whenPromptRequiresJson() {
+        Map<String, Object> responseBody = Map.of(
+                "choices", List.of(
+                        Map.of("message", Map.of("content", "{\"dietPlan\":[]}"))
+                )
+        );
+        when(deepSeekRestTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        String result = deepSeekAiService.chat("只返回 JSON", "user prompt");
+
+        assertEquals("{\"dietPlan\":[]}", result);
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(deepSeekRestTemplate).postForEntity(anyString(), captor.capture(), eq(Map.class));
+        assertTrue(((Map<?, ?>) captor.getValue().getBody()).containsKey("response_format"));
     }
 
     @Test

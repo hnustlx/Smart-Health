@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -38,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "用户不存在或已被禁用");
                 return;
             }
+            userMapper.updateLastActiveTime(userId, LocalDateTime.now());
 
             String username = jwtTokenProvider.getUsernameFromToken(token);
             String role = jwtTokenProvider.getRoleFromToken(token);

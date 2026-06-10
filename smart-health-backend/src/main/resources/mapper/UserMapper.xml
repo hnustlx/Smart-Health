@@ -9,6 +9,7 @@
         <result property="role" column="role"/>
         <result property="status" column="status"/>
         <result property="vipExpireTime" column="vip_expire_time"/>
+        <result property="lastActiveTime" column="last_active_time"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
@@ -45,6 +46,40 @@
         </where>
     </select>
 
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <select id="countByRole" resultType="long">
+        SELECT COUNT(*) FROM user WHERE role = #{role}
+    </select>
+
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM user WHERE status = #{status}
+    </select>
+
+    <select id="countCreatedSince" resultType="long">
+        SELECT COUNT(*) FROM user WHERE create_time &gt;= #{startTime}
+    </select>
+
+    <select id="countActiveSince" resultType="long">
+        SELECT COUNT(*) FROM user WHERE status = 1 AND last_active_time &gt;= #{startTime}
+    </select>
+
+    <select id="findRecentActive" resultType="com.smarthealth.dto.response.DashboardRecentUserResponse">
+        SELECT
+            id,
+            username,
+            role,
+            status,
+            CASE WHEN last_active_time &gt;= #{onlineStart} THEN TRUE ELSE FALSE END AS online,
+            last_active_time AS lastActiveTime
+        FROM user
+        WHERE last_active_time IS NOT NULL
+        ORDER BY last_active_time DESC
+        LIMIT #{limit}
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user (username, password, role, status)
         VALUES (#{username}, #{password}, #{role}, #{status})
@@ -52,6 +87,10 @@
 
     <update id="updateStatus">
         UPDATE user SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="updateLastActiveTime">
+        UPDATE user SET last_active_time = #{lastActiveTime} WHERE id = #{id}
     </update>
 
     <update id="updateRoleAndVipExpire">
