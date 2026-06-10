@@ -9,7 +9,7 @@
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent="submit">
         <el-form-item label="管理员账号" prop="username">
-          <el-input v-model="form.username" size="large" autocomplete="username" />
+          <el-input v-model="form.username" size="large" autocomplete="username" :ref="setRef(0)" @keyup.enter="onEnter(0)" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="form.password" size="large" type="password" autocomplete="current-password" show-password />
@@ -39,10 +39,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '../../api/modules/auth'
 import { clearAuth, setToken, setUser } from '../../utils/auth'
+import { useEnterToNext } from '../../composables/useEnterToNext'
 
 const route = useRoute()
 const router = useRouter()
 const formRef = ref()
+const { setRef, onEnter } = useEnterToNext(2)
 const loading = ref(false)
 const devLoginEnabled = import.meta.env.VITE_ENABLE_DEV_TOOLS === 'true'
 

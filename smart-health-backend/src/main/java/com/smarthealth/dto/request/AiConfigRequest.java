@@ -31,6 +31,4 @@ public class AiConfigRequest {
     @Schema(description = "模型名称", example = "deepseek-chat")
     private String model;
 
-    @Schema(description = "自定义 AI 厂商（provider=CUSTOM 时使用）", example = "deepseek")
-    private String customProvider;
 }

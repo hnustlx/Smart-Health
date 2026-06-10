@@ -6,7 +6,7 @@
     </div>
 
     <div class="table-toolbar">
-      <el-input v-model="keyword" clearable placeholder="用户名搜索" />
+      <el-input v-model="keyword" clearable placeholder="用户名搜索" @keyup.enter="page=1; loadList()" />
       <el-button type="primary" @click="page=1; loadList()">查询</el-button>
     </div>
 

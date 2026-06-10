@@ -34,6 +34,8 @@
               v-model="form.username"
               size="large"
               autocomplete="username"
+              :ref="setRef(0)"
+              @keyup.enter="onEnter(0)"
               @focus="assistantState = 'username'"
               @blur="assistantState = 'idle'"
             />
@@ -78,11 +80,13 @@ import HealthAssistant from '../components/HealthAssistant.vue'
 import { login } from '../api/modules/auth'
 import { setToken, setUser } from '../utils/auth'
 import qingyaMark from '../assets/qingya-mark.svg'
+import { useEnterToNext } from '../composables/useEnterToNext'
 
 const router = useRouter()
 const route = useRoute()
 const authPage = ref()
 const formRef = ref()
+const { setRef, onEnter } = useEnterToNext(2)
 const loginCard = ref()
 const cardContent = ref()
 const assistantRef = ref()

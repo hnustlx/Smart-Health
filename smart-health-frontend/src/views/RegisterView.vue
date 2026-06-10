@@ -5,7 +5,7 @@
       <h1>开始记录健康变化</h1>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" size="large" autocomplete="username" />
+          <el-input v-model="form.username" size="large" autocomplete="username" :ref="setRef(0)" @keyup.enter="onEnter(0)" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="form.password" size="large" type="password" autocomplete="new-password" show-password />
@@ -24,9 +24,11 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { register } from '../api/modules/auth'
+import { useEnterToNext } from '../composables/useEnterToNext'
 
 const router = useRouter()
 const formRef = ref()
+const { setRef, onEnter } = useEnterToNext(2)
 const loading = ref(false)
 const form = reactive({
   username: '',

@@ -46,6 +46,21 @@ public class VipCodeService {
     }
 
     @Transactional
+    public String generateCheckinRewardCode(Long userId, int vipDays) {
+        String code = "VIP-REWARD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        LocalDateTime now = LocalDateTime.now();
+        VipActivationCode entity = new VipActivationCode();
+        entity.setCode(code);
+        entity.setCreatedBy(userId);
+        entity.setCreatedAt(now);
+        entity.setExpiresAt(now.plusDays(vipDays));
+        entity.setSource("CHECKIN_REWARD");
+        entity.setVipDays(vipDays);
+        vipCodeMapper.insert(entity);
+        return code;
+    }
+
+    @Transactional
     public User activateVip(String code, Long userId) {
         VipActivationCode record = vipCodeMapper.findByCode(code);
         if (record == null) {

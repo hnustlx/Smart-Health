@@ -6,7 +6,7 @@
     </div>
 
     <div class="table-toolbar">
-      <el-input-number v-model="count" :min="1" :max="100" />
+      <el-input-number v-model="count" :min="1" :max="100" @keyup.enter="generate" />
       <el-button type="primary" :loading="generating" @click="generate">生成激活码</el-button>
     </div>
 

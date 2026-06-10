@@ -3,12 +3,12 @@
     <div class="section-heading chat-heading">
       <div>
         <p>智能问答</p>
-        <h2>VIP 专属健康问答</h2>
+        <h2>AI 智能问答</h2>
       </div>
     </div>
     <el-alert
-      v-if="user?.role !== 'VIP'"
-      title="智能健康问答为 VIP 专属功能，开通 VIP 后可使用。"
+      v-if="!['VIP', 'ADMIN'].includes(user?.role)"
+      title="智能健康问答为 VIP 和管理员专属功能。"
       type="warning"
       show-icon
       :closable="false"
