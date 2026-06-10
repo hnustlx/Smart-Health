@@ -25,4 +25,7 @@ public class AiConfigRequest {
     @Size(max = 100, message = "模型名最多 100 字")
     @Schema(description = "模型名称", example = "deepseek-chat")
     private String model;
+
+    @Schema(description = "自定义 AI 厂商（provider=CUSTOM 时使用）", example = "deepseek")
+    private String customProvider;
 }

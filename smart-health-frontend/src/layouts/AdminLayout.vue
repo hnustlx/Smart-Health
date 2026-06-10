@@ -14,6 +14,7 @@
         <el-menu-item index="/admin/users">用户管理</el-menu-item>
         <el-menu-item index="/admin/vip-codes">VIP 激活码</el-menu-item>
         <el-menu-item index="/admin/knowledge">健康知识库</el-menu-item>
+        <el-menu-item index="/admin/ai-configs">AI 配置管理</el-menu-item>
       </el-menu>
 
       <div class="admin-sidebar-note">
@@ -52,7 +53,8 @@ const titles = {
   '/admin': '后台总览',
   '/admin/users': '用户管理',
   '/admin/vip-codes': 'VIP 激活码',
-  '/admin/knowledge': '健康知识库'
+  '/admin/knowledge': '健康知识库',
+  '/admin/ai-configs': 'AI 配置管理'
 }
 
 const pageTitle = computed(() => titles[route.path] || '管理员后台')

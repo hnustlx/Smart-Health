@@ -3,6 +3,9 @@ package com.smarthealth.mapper;
 
 import com.smarthealth.entity.UserAiConfig;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface UserAiConfigMapper {
@@ -10,4 +13,8 @@ public interface UserAiConfigMapper {
     void insert(UserAiConfig config);
     void update(UserAiConfig config);
     void deleteByUserId(Long userId);
+
+    UserAiConfig findByUserIdWithUsername(@Param("userId") Long userId);
+    List<UserAiConfig> findAll(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
+    long countAll(@Param("keyword") String keyword);
 }

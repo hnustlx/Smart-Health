@@ -50,6 +50,9 @@ public class UserAiConfigService {
             testConnection(request);
         }
 
+        String customProvider = "CUSTOM".equals(provider)
+                ? (request.getCustomProvider() != null ? request.getCustomProvider() : "deepseek")
+                : "deepseek";
         String apiKey = "CUSTOM".equals(provider) ? request.getApiKey() : null;
         String apiUrl = "CUSTOM".equals(provider) ? request.getApiUrl() : null;
         String model = "CUSTOM".equals(provider) ? request.getModel() : null;
@@ -59,6 +62,7 @@ public class UserAiConfigService {
             UserAiConfig config = new UserAiConfig();
             config.setUserId(userId);
             config.setProvider(provider);
+            config.setCustomProvider(customProvider);
             config.setApiKey(apiKey);
             config.setApiUrl(apiUrl);
             config.setModel(model);
@@ -68,6 +72,7 @@ public class UserAiConfigService {
             return toResponse(config);
         } else {
             existing.setProvider(provider);
+            existing.setCustomProvider(customProvider);
             existing.setApiKey(apiKey);
             existing.setApiUrl(apiUrl);
             existing.setModel(model);

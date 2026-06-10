@@ -71,3 +71,15 @@ export function enableKnowledge(id) {
 export function disableKnowledge(id) {
   return request.put(`/admin/knowledge/${id}/disable`)
 }
+
+export function getAiConfigs(params) {
+  return request.get('/admin/ai-configs', { params })
+}
+
+export function getAiConfigDetail(userId) {
+  return request.get(`/admin/ai-configs/${userId}`)
+}
+
+export function resetAiConfigAdmin(userId) {
+  return request.delete(`/admin/ai-configs/${userId}`)
+}

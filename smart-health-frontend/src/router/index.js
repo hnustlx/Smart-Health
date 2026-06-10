@@ -113,6 +113,11 @@ const routes = [
         path: 'vip-codes',
         name: 'AdminVipCodes',
         component: () => import('../views/admin/AdminVipCodesView.vue')
+      },
+      {
+        path: 'ai-configs',
+        name: 'AdminAiConfig',
+        component: () => import('../views/admin/AdminAiConfigView.vue')
       }
     ]
   },

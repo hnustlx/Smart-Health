@@ -9,9 +9,11 @@ public class UserAiConfig {
     private Long id;
     private Long userId;
     private String provider;
+    private String customProvider;
     private String apiKey;
     private String apiUrl;
     private String model;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String username;  // 非数据库字段，用于 JOIN 查询
 }
