@@ -6,8 +6,8 @@
     </div>
 
     <div class="table-toolbar">
-      <el-input v-model="filters.keyword" clearable placeholder="关键词" />
-      <el-input v-model="filters.category" clearable placeholder="分类" />
+      <el-input v-model="filters.keyword" clearable placeholder="关键词" @keyup.enter="loadList" />
+      <el-input v-model="filters.category" clearable placeholder="分类" @keyup.enter="loadList" />
       <el-select v-model="filters.status" clearable placeholder="状态">
         <el-option label="启用" value="enabled" />
         <el-option label="禁用" value="disabled" />

@@ -47,6 +47,8 @@
               type="password"
               autocomplete="current-password"
               show-password
+              :ref="setRef(1)"
+              @keyup.enter="onEnter(1)"
               @focus="assistantState = 'password'"
               @blur="assistantState = 'idle'"
             />

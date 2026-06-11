@@ -57,7 +57,7 @@
             </div>
           </div>
           <el-form-item prop="question">
-            <el-input v-model="form.question" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="例如：减脂期间晚餐怎么吃？" />
+            <el-input v-model="form.question" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="例如：减脂期间晚餐怎么吃？" @keydown.enter.exact.prevent="submit" />
           </el-form-item>
           <div class="chat-composer-footer">
             <span>回答仅供健康管理参考</span>

@@ -4434,6 +4434,11 @@ a {
   background: #2f7b67;
 }
 
+[data-theme="night"] .checkin-cell.level-3,
+[data-theme="night"] .checkin-legend .level-3 {
+  background: #38c28b;
+}
+
 [data-theme="night"] .checkin-reward {
   background:
     radial-gradient(circle at 100% 0%, rgba(94, 224, 170, 0.12), transparent 28%),

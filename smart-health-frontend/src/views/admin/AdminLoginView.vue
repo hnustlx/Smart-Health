@@ -12,7 +12,7 @@
           <el-input v-model="form.username" size="large" autocomplete="username" :ref="setRef(0)" @keyup.enter="onEnter(0)" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" size="large" type="password" autocomplete="current-password" show-password />
+          <el-input v-model="form.password" size="large" type="password" autocomplete="current-password" show-password :ref="setRef(1)" @keyup.enter="onEnter(1)" />
         </el-form-item>
         <el-button class="admin-login-submit" type="primary" size="large" :loading="loading" @click="submit">
           登录后台

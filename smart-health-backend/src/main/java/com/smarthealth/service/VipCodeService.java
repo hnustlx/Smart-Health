@@ -37,6 +37,8 @@ public class VipCodeService {
             VipActivationCode entity = new VipActivationCode();
             entity.setCode(code);
             entity.setCreatedBy(adminId);
+            entity.setVipDays(30);
+            entity.setSource("ADMIN");
             entity.setCreatedAt(now);
             entity.setExpiresAt(expiresAt);
             vipCodeMapper.insert(entity);
