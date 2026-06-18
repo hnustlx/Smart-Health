@@ -18,11 +18,12 @@
           <el-select v-model="filters.level" clearable placeholder="按级别筛选">
             <el-option v-for="level in levelOptions" :key="level" :label="level" :value="level" />
           </el-select>
-          <span>共 {{ filteredPlans.length }} 条</span>
+          <span>共 {{ total }} 条</span>
         </div>
         <el-empty v-if="filteredPlans.length === 0" description="没有匹配的历史计划" />
-        <el-table v-else :data="filteredPlans" border @row-click="selectPlan">
-          <el-table-column prop="createTime" label="创建时间">
+        <template v-if="filteredPlans.length > 0">
+          <el-table :data="filteredPlans" border @row-click="selectPlan">
+            <el-table-column prop="createTime" label="创建时间">
             <template #default="{ row }">{{ formatTime(row.createTime) }}</template>
           </el-table-column>
           <el-table-column label="类型" width="140">
@@ -33,6 +34,19 @@
           </el-table-column>
           <el-table-column prop="trendSummary" label="体重趋势" />
         </el-table>
+          <el-pagination
+            v-if="total > size"
+            v-model:current-page="page"
+            v-model:page-size="size"
+            class="table-pagination"
+            background
+            layout="total, prev, pager, next"
+            :total="total"
+            @current-change="loadHistory"
+          />
+        </template>
+
+        <el-empty v-else description="没有匹配的历史计划" />
 
         <section v-if="detail" class="history-detail">
           <div class="history-detail-head">
@@ -164,6 +178,9 @@ import {
 const loading = ref(false)
 const plans = ref([])
 const detail = ref()
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 const filters = reactive({
   date: '',
   type: '',
@@ -230,8 +247,9 @@ onMounted(loadHistory)
 async function loadHistory() {
   loading.value = true
   try {
-    const data = await getPlanHistory()
-    plans.value = [...data].sort((a, b) => b.createTime.localeCompare(a.createTime))
+    const data = await getPlanHistory({ page: page.value, size: size.value })
+    plans.value = [...data.records].sort((a, b) => b.createTime.localeCompare(a.createTime))
+    total.value = data.total || 0
   } finally {
     loading.value = false
   }

@@ -81,16 +81,20 @@ public class AdminUserController {
         return Result.success("禁用成功", null);
     }
 
-    @Operation(summary = "查询用户体重记录")
+    @Operation(summary = "查询用户体重记录（分页）")
     @GetMapping("/{id}/weights")
-    public Result<List<WeightRecordResponse>> getUserWeights(@PathVariable Long id) {
-        return Result.success(weightService.getHistory(id));
+    public Result<Map<String, Object>> getUserWeights(@PathVariable Long id,
+                                                       @RequestParam(defaultValue = "1") @Min(1) int page,
+                                                       @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+        return Result.success(weightService.getHistoryPage(id, page, size));
     }
 
-    @Operation(summary = "查询用户计划记录")
+    @Operation(summary = "查询用户计划记录（分页）")
     @GetMapping("/{id}/plans")
-    public Result<List<PlanHistoryResponse>> getUserPlans(@PathVariable Long id) {
-        return Result.success(planService.getHistory(id));
+    public Result<Map<String, Object>> getUserPlans(@PathVariable Long id,
+                                                     @RequestParam(defaultValue = "1") @Min(1) int page,
+                                                     @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+        return Result.success(planService.getHistoryPage(id, page, size));
     }
 
     @Operation(summary = "查看用户健康档案")

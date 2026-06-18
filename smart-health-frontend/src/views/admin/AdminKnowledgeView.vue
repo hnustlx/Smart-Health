@@ -49,6 +49,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      v-if="total > size"
+      v-model:current-page="page"
+      v-model:page-size="size"
+      class="table-pagination"
+      background
+      layout="total, prev, pager, next"
+      :total="total"
+      @current-change="loadList"
+    />
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑健康知识' : '新增健康知识'" width="680px">
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
@@ -106,6 +116,9 @@ const dialogVisible = ref(false)
 const editingId = ref('')
 const formRef = ref()
 const list = ref([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 
 const filters = reactive({
   keyword: '',
@@ -149,12 +162,16 @@ function resetForm(data = createEmptyForm()) {
 async function loadList() {
   loading.value = true
   try {
-    list.value = await getKnowledgeList({
+    const data = await getKnowledgeList({
       keyword: filters.keyword || undefined,
       category: filters.category || undefined,
       status: filters.status || undefined,
-      level: filters.level || undefined
+      level: filters.level || undefined,
+      page: page.value,
+      size: size.value
     })
+    list.value = data.records || []
+    total.value = data.total || 0
   } finally {
     loading.value = false
   }

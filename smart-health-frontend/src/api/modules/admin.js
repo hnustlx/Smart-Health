@@ -20,12 +20,12 @@ export function disableUser(id) {
   return request.put(`/admin/users/${id}/disable`)
 }
 
-export function getUserWeights(id) {
-  return request.get(`/admin/users/${id}/weights`)
+export function getUserWeights(id, params) {
+  return request.get(`/admin/users/${id}/weights`, { params })
 }
 
-export function getUserPlans(id) {
-  return request.get(`/admin/users/${id}/plans`)
+export function getUserPlans(id, params) {
+  return request.get(`/admin/users/${id}/plans`, { params })
 }
 
 export function getUserProfile(id) {
@@ -44,8 +44,8 @@ export function generateVipCodes(count) {
   return request.post('/admin/vip-codes/generate', undefined, { params: { count } })
 }
 
-export function getVipCodes() {
-  return request.get('/admin/vip-codes/list')
+export function getVipCodes(params) {
+  return request.get('/admin/vip-codes/list', { params })
 }
 
 export function createKnowledge(data) {

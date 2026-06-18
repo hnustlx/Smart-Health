@@ -102,6 +102,17 @@ public class PlanService {
                 .collect(Collectors.toList());
     }
 
+    public Map<String, Object> getHistoryPage(Long userId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<PlanHistoryResponse> records = planMapper.findByUserIdPage(userId, offset, size).stream()
+                .map(p -> new PlanHistoryResponse(
+                        p.getId(), p.getPlanType(), p.getPlanLevel(),
+                        p.getTrendSummary(), p.getCreateTime()))
+                .collect(Collectors.toList());
+        long total = planMapper.countByUserId(userId);
+        return Map.of("total", total, "records", records);
+    }
+
     public PlanDetailResponse getDetail(Long userId, String role, Long planId) {
         Plan plan = planMapper.findById(planId);
         if (plan == null) {

@@ -13,6 +13,10 @@ public interface PlanMapper {
 
     List<Plan> findByUserId(@Param("userId") Long userId);
 
+    List<Plan> findByUserIdPage(@Param("userId") Long userId, @Param("offset") int offset, @Param("size") int size);
+
+    long countByUserId(@Param("userId") Long userId);
+
     long countCreatedSince(@Param("startTime") LocalDateTime startTime);
 
     long countByLevelSince(@Param("planLevel") String planLevel, @Param("startTime") LocalDateTime startTime);

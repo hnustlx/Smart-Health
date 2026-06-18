@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -87,15 +88,28 @@ public class VipCodeService {
             throw new BusinessException(ResultCode.CONFLICT, "激活码已被使用");
         }
 
-        LocalDateTime vipExpireTime = LocalDateTime.now().plusDays(30);
-        userMapper.updateRoleAndVipExpire(userId, "VIP", vipExpireTime);
+        LocalDateTime vipExpireTime = LocalDateTime.now().plusDays(record.getVipDays());
+        if ("ADMIN".equals(user.getRole())) {
+            userMapper.updateVipExpire(userId, vipExpireTime);
+        } else {
+            userMapper.updateRoleAndVipExpire(userId, "VIP", vipExpireTime);
+        }
 
-        user.setRole("VIP");
         user.setVipExpireTime(vipExpireTime);
+        if (!"ADMIN".equals(user.getRole())) {
+            user.setRole("VIP");
+        }
         return user;
     }
 
     public List<VipActivationCode> listAll() {
         return vipCodeMapper.findAll();
+    }
+
+    public Map<String, Object> listAllPage(int page, int size) {
+        int offset = (page - 1) * size;
+        List<VipActivationCode> records = vipCodeMapper.findAllPage(offset, size);
+        long total = vipCodeMapper.countAll();
+        return Map.of("total", total, "records", records);
     }
 }

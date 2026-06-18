@@ -11,7 +11,7 @@ const mockAdapter = async (config) => {
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-  timeout: 15000,
+  timeout: 30000,
   adapter: useMockData ? mockAdapter : undefined
 })
 
@@ -47,11 +47,16 @@ request.interceptors.response.use(
   },
   (error) => {
     const status = error.response?.status
-    const message = error.response?.data?.message || error.message || '网络异常'
+    const data = error.response?.data
+    const message = data?.message || error.message || '网络异常'
     if (status === 401) {
-      clearAuth()
-      ElMessage.warning('登录已失效，请重新登录')
-      router.push(getLoginPath())
+      if (data?.code === 401) {
+        ElMessage.error(message)
+      } else {
+        clearAuth()
+        ElMessage.warning('登录已失效，请重新登录')
+        router.push(getLoginPath())
+      }
     } else {
       ElMessage.error(message)
     }

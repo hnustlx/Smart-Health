@@ -14,7 +14,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "AI 计划", description = "AI 饮食与运动计划生成")
 @RestController
@@ -32,10 +35,12 @@ public class PlanController {
         return Result.success("生成成功", response);
     }
 
-    @Operation(summary = "查询历史计划")
+    @Operation(summary = "查询历史计划（分页）")
     @GetMapping("/history")
-    public Result<List<PlanHistoryResponse>> getHistory(@AuthenticationPrincipal UserPrincipal principal) {
-        return Result.success(planService.getHistory(principal.getUserId()));
+    public Result<Map<String, Object>> getHistory(@AuthenticationPrincipal UserPrincipal principal,
+                                                   @RequestParam(defaultValue = "1") @Min(1) int page,
+                                                   @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+        return Result.success(planService.getHistoryPage(principal.getUserId(), page, size));
     }
 
     @Operation(summary = "查询计划详情")

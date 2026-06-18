@@ -14,6 +14,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      v-if="total > size"
+      v-model:current-page="page"
+      v-model:page-size="size"
+      class="table-pagination"
+      background
+      layout="total, prev, pager, next"
+      :total="total"
+      @current-change="loadRecords"
+    />
   </section>
 </template>
 
@@ -26,13 +36,18 @@ import { deleteUserWeight, getUserWeights } from '../../api/modules/admin'
 const route = useRoute()
 const loading = ref(false)
 const records = ref([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 
 onMounted(loadRecords)
 
 async function loadRecords() {
   loading.value = true
   try {
-    records.value = await getUserWeights(route.params.id)
+    const data = await getUserWeights(route.params.id, { page: page.value, size: size.value })
+    records.value = data.records || []
+    total.value = data.total || 0
   } finally {
     loading.value = false
   }

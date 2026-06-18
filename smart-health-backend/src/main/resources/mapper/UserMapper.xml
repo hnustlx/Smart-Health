@@ -96,4 +96,8 @@
     <update id="updateRoleAndVipExpire">
         UPDATE user SET role = #{role}, vip_expire_time = #{vipExpireTime} WHERE id = #{id}
     </update>
+
+    <update id="updateVipExpire">
+        UPDATE user SET vip_expire_time = #{vipExpireTime} WHERE id = #{id}
+    </update>
 </mapper>

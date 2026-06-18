@@ -8,6 +8,8 @@ import com.smarthealth.service.RagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -47,21 +49,27 @@ public class KnowledgeController {
         return Result.success("删除成功", null);
     }
 
-    @Operation(summary = "查询健康知识列表")
+    @Operation(summary = "查询健康知识列表（分页）")
     @GetMapping("/list")
-    public Result<List<KnowledgeResponse>> listKnowledge(
+    public Result<Map<String, Object>> listKnowledge(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String level) {
+            @RequestParam(required = false) String level,
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
         List<Map<String, Object>> items = ragService.listKnowledge(category, keyword, status, level);
-        List<KnowledgeResponse> responses = items.stream()
+        List<KnowledgeResponse> allRecords = items.stream()
                 .map(m -> new KnowledgeResponse(
                         (String) m.get("id"),
                         (String) m.get("document"),
                         (Map<String, Object>) m.get("metadata")))
                 .collect(Collectors.toList());
-        return Result.success(responses);
+        int total = allRecords.size();
+        int fromIndex = Math.min((page - 1) * size, total);
+        int toIndex = Math.min(fromIndex + size, total);
+        List<KnowledgeResponse> records = allRecords.subList(fromIndex, toIndex);
+        return Result.success(Map.of("total", total, "records", records));
     }
 
     @Operation(summary = "启用健康知识")

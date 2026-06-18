@@ -4,8 +4,8 @@ export function generatePlan() {
   return request.post('/plan/generate', undefined, { timeout: 60000 })
 }
 
-export function getPlanHistory() {
-  return request.get('/plan/history')
+export function getPlanHistory(params) {
+  return request.get('/plan/history', { params })
 }
 
 export function getPlanDetail(id) {

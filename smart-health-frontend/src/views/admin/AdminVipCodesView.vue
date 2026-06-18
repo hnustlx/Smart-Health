@@ -34,6 +34,16 @@
       <el-table-column prop="expiresAt" label="过期时间" min-width="180" />
       <el-table-column prop="usedAt" label="使用时间" min-width="180" />
     </el-table>
+    <el-pagination
+      v-if="total > size"
+      v-model:current-page="page"
+      v-model:page-size="size"
+      class="table-pagination"
+      background
+      layout="total, prev, pager, next"
+      :total="total"
+      @current-change="loadCodes"
+    />
   </section>
 </template>
 
@@ -47,13 +57,18 @@ const generating = ref(false)
 const count = ref(1)
 const codes = ref([])
 const latestCodes = ref([])
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 
 onMounted(loadCodes)
 
 async function loadCodes() {
   loading.value = true
   try {
-    codes.value = await getVipCodes()
+    const data = await getVipCodes({ page: page.value, size: size.value })
+    codes.value = data.records || []
+    total.value = data.total || 0
   } finally {
     loading.value = false
   }

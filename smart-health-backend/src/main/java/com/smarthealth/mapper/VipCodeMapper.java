@@ -14,6 +14,10 @@ public interface VipCodeMapper {
 
     List<VipActivationCode> findAll();
 
+    List<VipActivationCode> findAllPage(@Param("offset") int offset, @Param("size") int size);
+
+    long countAll();
+
     int updateStatus(@Param("id") Long id, @Param("status") Integer status,
                      @Param("usedBy") Long usedBy, @Param("usedAt") java.time.LocalDateTime usedAt);
 

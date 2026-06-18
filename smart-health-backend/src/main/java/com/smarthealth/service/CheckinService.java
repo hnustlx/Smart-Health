@@ -40,6 +40,7 @@ public class CheckinService {
         String rewardCode = null;
         if (totalDays % REWARD_INTERVAL_DAYS == 0) {
             rewardCode = vipCodeService.generateCheckinRewardCode(userId, REWARD_VIP_DAYS);
+            vipCodeService.activateVip(rewardCode, userId);
         }
         return buildStatus(userId, rewardCode);
     }

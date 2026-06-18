@@ -41,4 +41,7 @@ public interface UserMapper {
 
     int updateRoleAndVipExpire(@Param("id") Long id, @Param("role") String role,
                                @Param("vipExpireTime") java.time.LocalDateTime vipExpireTime);
+
+    int updateVipExpire(@Param("id") Long id,
+                        @Param("vipExpireTime") java.time.LocalDateTime vipExpireTime);
 }

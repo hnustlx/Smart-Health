@@ -28,7 +28,7 @@ public class ChatService {
     private final KnowledgeReferenceService knowledgeReferenceService;
 
     public ChatResponse askQuestion(Long userId, String role, ChatRequest request) {
-        if (!"VIP".equals(role)) {
+        if (!"VIP".equals(role) && !"ADMIN".equals(role)) {
             throw new BusinessException(ResultCode.FORBIDDEN, "智能健康问答为 VIP 专属功能");
         }
 

@@ -20,6 +20,15 @@
         SELECT * FROM plan WHERE user_id = #{userId} ORDER BY create_time DESC
     </select>
 
+    <select id="findByUserIdPage" resultMap="planMap">
+        SELECT * FROM plan WHERE user_id = #{userId} ORDER BY create_time DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*) FROM plan WHERE user_id = #{userId}
+    </select>
+
     <select id="countCreatedSince" resultType="long">
         SELECT COUNT(*) FROM plan WHERE create_time &gt;= #{startTime}
     </select>

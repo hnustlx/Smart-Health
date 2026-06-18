@@ -1,9 +1,16 @@
 server:
   port: 8080
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
 
 spring:
   datasource:
     url: jdbc:mysql://mysql:3306/smart_health?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
   flyway:
     enabled: true
 
@@ -12,4 +19,4 @@ chroma:
 
 logging:
   level:
-    com.smarthealth: debug
+    com.smarthealth: info

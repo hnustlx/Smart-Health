@@ -21,6 +21,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+      v-if="total > size"
+      v-model:current-page="page"
+      v-model:page-size="size"
+      class="table-pagination"
+      background
+      layout="total, prev, pager, next"
+      :total="total"
+      @current-change="loadPlans"
+    />
 
     <el-dialog v-model="detailVisible" title="AI 计划详情" width="960px" destroy-on-close>
       <div ref="detailRef" v-loading="detailLoading" class="admin-plan-detail">
@@ -151,6 +161,9 @@ const detailVisible = ref(false)
 const plans = ref([])
 const detail = ref()
 const pageRoot = ref()
+const page = ref(1)
+const size = ref(10)
+const total = ref(0)
 const detailRef = ref()
 const detailContent = computed(() => detail.value?.planContent || {})
 const dietPlan = computed(() => detailContent.value.dietPlan || [])
@@ -214,7 +227,9 @@ onMounted(() => {
 async function loadPlans() {
   loading.value = true
   try {
-    plans.value = await getUserPlans(route.params.id)
+    const data = await getUserPlans(route.params.id, { page: page.value, size: size.value })
+    plans.value = data.records || []
+    total.value = data.total || 0
   } finally {
     loading.value = false
   }

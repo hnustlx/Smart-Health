@@ -1,6 +1,5 @@
-version: "3.9"
-
 services:
+  # ========== 数据库 ==========
   mysql:
     image: mysql:8.0
     container_name: smart-health-mysql
@@ -9,17 +8,24 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-88888888}
       MYSQL_DATABASE: smart_health
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--connect_timeout=10"]
+      interval: 30s
+      timeout: 20s
       retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - smart-health-net
 
+  # ========== 向量数据库 ==========
   chroma:
     image: chromadb/chroma:0.5.18
     container_name: smart-health-chroma
@@ -30,36 +36,85 @@ services:
       - chroma_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     networks:
       - smart-health-net
 
+  # ========== 后端 API ==========
   backend:
     build:
       context: ./smart-health-backend
       dockerfile: Dockerfile
     container_name: smart-health-backend
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-88888888}
       JWT_SECRET: ${JWT_SECRET:-SmartHealth2026SecretKeyForJWTTokenGenerationMustBe256BitsLong!!}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      JAVA_OPTS: "-Xms64m -Xmx128m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/api/v1/health", "--connect-timeout", "5", "--max-time", "10"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     depends_on:
       mysql:
         condition: service_healthy
       chroma:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - smart-health-net
+
+  # ========== 前端构建 ==========
+  frontend:
+    build:
+      context: ./smart-health-frontend
+      dockerfile: Dockerfile
+    container_name: smart-health-frontend
+    volumes:
+      - frontend_dist:/app/dist
+    networks:
+      - smart-health-net
+
+  # ========== Nginx 反向代理 ==========
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: smart-health-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 32M
     networks:
       - smart-health-net
 
 volumes:
   mysql_data:
   chroma_data:
+  frontend_dist:
 
 networks:
   smart-health-net:

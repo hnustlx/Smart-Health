@@ -28,6 +28,15 @@
         SELECT * FROM vip_activation_code ORDER BY created_at DESC
     </select>
 
+    <select id="findAllPage" resultMap="codeMap">
+        SELECT * FROM vip_activation_code ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM vip_activation_code
+    </select>
+
     <update id="updateStatus">
         UPDATE vip_activation_code
         SET status = #{status}, used_by = #{usedBy}, used_at = #{usedAt}

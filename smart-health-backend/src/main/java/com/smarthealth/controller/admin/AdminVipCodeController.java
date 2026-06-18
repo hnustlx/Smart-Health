@@ -33,9 +33,10 @@ public class AdminVipCodeController {
         return Result.success(Map.of("codes", codes, "count", codes.size()));
     }
 
-    @Operation(summary = "查看激活码列表")
+    @Operation(summary = "查看激活码列表（分页）")
     @GetMapping("/list")
-    public Result<List<VipActivationCode>> listCodes() {
-        return Result.success(vipCodeService.listAll());
+    public Result<Map<String, Object>> listCodes(@RequestParam(defaultValue = "1") @Min(1) int page,
+                                                  @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+        return Result.success(vipCodeService.listAllPage(page, size));
     }
 }

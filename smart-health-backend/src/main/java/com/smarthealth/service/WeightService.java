@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,10 +25,17 @@ public class WeightService {
     private final WeightRecordMapper weightRecordMapper;
 
     public void addWeight(Long userId, AddWeightRequest request) {
+        LocalDate recordDate = request.getRecordDate();
+        if (recordDate == null) {
+            recordDate = LocalDate.now();
+        }
+        if (weightRecordMapper.countByUserIdAndDate(userId, recordDate) > 0) {
+            throw new BusinessException(ResultCode.CONFLICT, "今天已记录过体重，请勿重复记录");
+        }
         WeightRecord record = new WeightRecord();
         record.setUserId(userId);
         record.setWeight(request.getWeight());
-        record.setRecordDate(request.getRecordDate());
+        record.setRecordDate(recordDate);
         weightRecordMapper.insert(record);
     }
 
@@ -35,6 +43,15 @@ public class WeightService {
         return weightRecordMapper.findByUserId(userId).stream()
                 .map(r -> new WeightRecordResponse(r.getId(), r.getWeight(), r.getRecordDate()))
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getHistoryPage(Long userId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<WeightRecordResponse> records = weightRecordMapper.findByUserIdPage(userId, offset, size).stream()
+                .map(r -> new WeightRecordResponse(r.getId(), r.getWeight(), r.getRecordDate()))
+                .collect(Collectors.toList());
+        long total = weightRecordMapper.countByUserId(userId);
+        return Map.of("total", total, "records", records);
     }
 
     public WeightTrendResponse getTrend(Long userId, String period) {

@@ -14,6 +14,15 @@
         SELECT * FROM weight_record WHERE user_id = #{userId} ORDER BY record_date ASC
     </select>
 
+    <select id="findByUserIdPage" resultMap="weightMap">
+        SELECT * FROM weight_record WHERE user_id = #{userId} ORDER BY record_date DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*) FROM weight_record WHERE user_id = #{userId}
+    </select>
+
     <select id="findById" resultMap="weightMap">
         SELECT * FROM weight_record WHERE id = #{id}
     </select>
@@ -26,4 +35,9 @@
     <delete id="deleteById">
         DELETE FROM weight_record WHERE id = #{id}
     </delete>
+
+    <select id="countByUserIdAndDate" resultType="int">
+        SELECT COUNT(*) FROM weight_record
+        WHERE user_id = #{userId} AND record_date = #{recordDate}
+    </select>
 </mapper>

@@ -18,7 +18,7 @@
       </el-steps>
 
       <div class="profile-step-panel">
-        <section v-if="showProfile" class="profile-portrait-panel">
+        <section ref="portraitPanelRef" v-if="showProfile" class="profile-portrait-panel">
           <div class="profile-step-copy">
             <span>Health Profile</span>
             <h3>你的健康画像</h3>
@@ -114,7 +114,7 @@
 
       <div v-if="profileCompleted" class="profile-wizard-actions">
         <el-button @click="editProfile">继续编辑</el-button>
-        <el-button type="primary" @click="showProfile = true">查看健康画像</el-button>
+        <el-button type="primary" @click="viewProfile">查看健康画像</el-button>
       </div>
 
       <div v-else class="profile-wizard-actions">
@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createProfile, getProfile, updateProfile } from '../api/modules/profile'
 
@@ -140,6 +140,7 @@ const profileExists = ref(false)
 const profileCompleted = ref(false)
 const showProfile = ref(false)
 const activeStep = ref(0)
+const portraitPanelRef = ref()
 
 const steps = [
   { title: '身体信息', description: '年龄、性别、身高、体重' },
@@ -241,5 +242,12 @@ function editProfile() {
   showProfile.value = false
   profileCompleted.value = false
   activeStep.value = steps.length - 1
+}
+
+function viewProfile() {
+  showProfile.value = true
+  nextTick(() => {
+    portraitPanelRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
 }
 </script>

@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "智能问答", description = "VIP 智能健康问答")
+@Tag(name = "智能问答", description = "VIP / ADMIN 智能健康问答")
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
@@ -22,9 +22,9 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @Operation(summary = "VIP 智能问答")
+    @Operation(summary = "智能问答（VIP / ADMIN）")
     @PostMapping("/ask")
-    @PreAuthorize("hasRole('VIP')")
+    @PreAuthorize("hasAnyRole('VIP', 'ADMIN')")
     public Result<ChatResponse> askQuestion(@AuthenticationPrincipal UserPrincipal principal,
                                              @Valid @RequestBody ChatRequest request) {
         return Result.success(chatService.askQuestion(principal.getUserId(), principal.getRole(), request));
